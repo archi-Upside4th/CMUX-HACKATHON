@@ -1,18 +1,31 @@
 import { GoogleGenAI } from "@google/genai";
 
-let _client: GoogleGenAI | null = null;
-
-export function geminiClient(): GoogleGenAI {
-  if (_client) return _client;
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+function loadKeys(): string[] {
+  const keys = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+  ].filter((k): k is string => typeof k === "string" && k.length > 0);
+  if (keys.length === 0) {
     throw new Error(
-      "GEMINI_API_KEY 환경변수가 없습니다. .env 파일을 확인하세요."
+      "GEMINI_API_KEY 환경변수가 없습니다. .env.local 파일을 확인하세요."
     );
   }
-  _client = new GoogleGenAI({ apiKey });
-  return _client;
+  return keys;
 }
 
-// 진단용 기본 모델 — 빠른 응답이 데모에 중요
+let _keys: string[] | null = null;
+let _clients: GoogleGenAI[] | null = null;
+let _cursor = 0;
+
+export function geminiClient(): GoogleGenAI {
+  if (!_clients) {
+    _keys = loadKeys();
+    _clients = _keys.map((apiKey) => new GoogleGenAI({ apiKey }));
+  }
+  const client = _clients[_cursor % _clients.length];
+  _cursor = (_cursor + 1) % _clients.length;
+  return client;
+}
+
 export const DIAGNOSIS_MODEL = "gemini-2.5-flash";
