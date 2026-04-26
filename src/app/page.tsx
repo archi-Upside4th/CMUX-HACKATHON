@@ -116,10 +116,6 @@ export default function Home() {
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           우리 회사가 위반할 수 있는 의무는 무엇인가?
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          입력값과 검증된 법령 코퍼스를 매칭해 9개 의무별 적용·위험·근거 조문을
-          한 번에 확인합니다.
-        </p>
       </header>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
