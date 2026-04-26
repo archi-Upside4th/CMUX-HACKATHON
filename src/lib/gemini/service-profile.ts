@@ -4,7 +4,7 @@
  * "이 저장소가 어떤 서비스인지" 한 번에 정의 → 다음 Step C(ComplianceReport)의 공통 컨텍스트.
  */
 import { Type } from "@google/genai";
-import { geminiClient, DIAGNOSIS_MODEL } from "./client";
+import { withGemini, DIAGNOSIS_MODEL } from "./client";
 import {
   type RepoContext,
   ServiceProfileSchema,
@@ -118,8 +118,6 @@ interface Input {
 export async function inferServiceProfile(
   input: Input
 ): Promise<ServiceProfile> {
-  const ai = geminiClient();
-
   // 시스템 요약은 짧게 — Step C에서 디테일 사용
   const systemSummaries = input.systems.slice(0, 20).map((s) => ({
     id: s.id,
@@ -180,16 +178,18 @@ ${JSON.stringify(systemSummaries, null, 2)}
 ## 작업
 JSON 스키마에 맞춰 ServiceProfile 출력. 모든 필드 한국어.`;
 
-  const response = await ai.models.generateContent({
-    model: DIAGNOSIS_MODEL,
-    contents: userPrompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema,
-      temperature: 0.2,
-    },
-  });
+  const response = await withGemini((ai) =>
+    ai.models.generateContent({
+      model: DIAGNOSIS_MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema,
+        temperature: 0.2,
+      },
+    })
+  );
 
   const text = response.text;
   if (!text) throw new Error("ServiceProfile Gemini 응답이 비어 있습니다.");

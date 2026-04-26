@@ -96,6 +96,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const REPORT_SYSTEM_LIMIT = 15;
+    const truncatedSystems =
+      complianceReport && systems.length > REPORT_SYSTEM_LIMIT
+        ? systems.length - REPORT_SYSTEM_LIMIT
+        : 0;
+
     return Response.json({
       ok: true,
       repoUrl: collected.normalizedUrl,
@@ -112,12 +118,15 @@ export async function POST(req: NextRequest) {
       serviceProfile,
       report: complianceReport,
       reportError,
+      truncatedSystems,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[scan]", msg);
     return Response.json({ error: "분석 실패", detail: msg }, { status: 500 });
   } finally {
-    await collected.cleanup().catch(() => {});
+    await collected.cleanup().catch((err) => {
+      console.error("[scan cleanup]", err);
+    });
   }
 }

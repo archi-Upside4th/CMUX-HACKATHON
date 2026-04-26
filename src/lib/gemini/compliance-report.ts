@@ -6,7 +6,7 @@
  *        + obligation deep-dive + roadmap + open questions)
  */
 import { Type } from "@google/genai";
-import { geminiClient, DIAGNOSIS_MODEL } from "./client";
+import { withGemini, DIAGNOSIS_MODEL } from "./client";
 import {
   ComplianceReportSchema,
   type ComplianceReport,
@@ -16,7 +16,9 @@ import {
 import type { AISystem } from "@/lib/scan/synthesizer/schema";
 import {
   KNOWN_OBLIGATION_IDS,
+  isKnownObligationId,
   obligationsAsContext,
+  unsupportedArticleRefs,
   verifyCitation,
 } from "@/lib/laws/ai-basic-act";
 
@@ -251,8 +253,6 @@ const SYSTEM_LIMIT = 15; // 토큰 예산 — 상위 15개만
 export async function buildComplianceReport(
   input: Input
 ): Promise<ComplianceReport> {
-  const ai = geminiClient();
-
   const systems = input.systems.slice(0, SYSTEM_LIMIT);
   const callCtxBySystem = new Map(
     input.context.systemCallContexts.map((c) => [c.systemId, c])
@@ -301,17 +301,19 @@ JSON 스키마에 맞춰 ComplianceReport 출력.
 - obligationDeepDive는 9개 의무 모두 포함 (not_applicable이라도).
 - riskRegister는 우선순위 높은 것부터.`;
 
-  const response = await ai.models.generateContent({
-    model: DIAGNOSIS_MODEL,
-    contents: userPrompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema,
-      temperature: 0.25,
-      maxOutputTokens: 16_000,
-    },
-  });
+  const response = await withGemini((ai) =>
+    ai.models.generateContent({
+      model: DIAGNOSIS_MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema,
+        temperature: 0.25,
+        maxOutputTokens: 16_000,
+      },
+    })
+  );
 
   const text = response.text;
   if (!text)
@@ -324,19 +326,35 @@ JSON 스키마에 맞춰 ComplianceReport 출력.
     );
   }
 
-  const verifiedDeepDive = parsed.data.obligationDeepDive.map((o) => {
+  const verifiedDeepDive = [];
+  for (const o of parsed.data.obligationDeepDive) {
+    if (!isKnownObligationId(o.obligationId)) {
+      console.warn(
+        `[compliance-report] dropped obligation with unknown id: ${o.obligationId}`
+      );
+      continue;
+    }
     const checked = (o.citations ?? []).map((c) => {
       const r = verifyCitation(o.obligationId, c.text);
       return { text: c.text, verifiedLocator: r.ok ? r.locator : null };
     });
-    const hasVerified = checked.some((c) => c.verifiedLocator !== null);
-    return {
+    const hasVerifiedCitation = checked.some(
+      (c) => c.verifiedLocator !== null
+    );
+    const unsupportedRefs = unsupportedArticleRefs(
+      o.obligationId,
+      o.rationale ?? "",
+      ...(o.immediateActions ?? []),
+      ...(o.longTermActions ?? []),
+      ...(o.requiredEvidence ?? [])
+    );
+    verifiedDeepDive.push({
       ...o,
       citations: checked,
-      verified:
-        o.applicability === "not_applicable" ? hasVerified : hasVerified,
-    };
-  });
+      verified: hasVerifiedCitation && unsupportedRefs.length === 0,
+      unsupportedRefs,
+    });
+  }
 
   return { ...parsed.data, obligationDeepDive: verifiedDeepDive };
 }

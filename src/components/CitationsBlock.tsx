@@ -6,9 +6,10 @@ interface Citation {
 interface Props {
   citations: Citation[];
   obligationId?: string;
+  unsupportedRefs?: string[];
 }
 
-export function CitationsBlock({ citations }: Props) {
+export function CitationsBlock({ citations, unsupportedRefs }: Props) {
   if (citations.length === 0) {
     return (
       <div className="rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-700">
@@ -18,6 +19,12 @@ export function CitationsBlock({ citations }: Props) {
   }
   return (
     <div className="space-y-1.5">
+      {unsupportedRefs && unsupportedRefs.length > 0 && (
+        <div className="rounded border border-rose-200 bg-rose-50 p-2 text-[11px] text-rose-700">
+          ⚠ 본문에 의무 corpus에 없는 조문 번호가 등장했습니다 (환각 의심):{" "}
+          <span className="font-mono">{unsupportedRefs.join(", ")}</span>
+        </div>
+      )}
       {citations.map((c, i) => {
         const verified = c.verifiedLocator !== null;
         return (

@@ -11,7 +11,7 @@
  */
 import { Type } from "@google/genai";
 import { z } from "zod";
-import { geminiClient, DIAGNOSIS_MODEL } from "./client";
+import { withGemini, DIAGNOSIS_MODEL } from "./client";
 import type { AISystem } from "@/lib/scan/synthesizer/schema";
 import { obligationsAsContext } from "@/lib/laws/ai-basic-act";
 
@@ -152,17 +152,18 @@ ${obligationsAsContext()}
 위 시스템 ${top.length}개에 대해 JSON 스키마에 맞춰 서술 필드를 생성하세요.
 systemId는 입력 그대로 유지. 시스템 순서와 동일하게 출력.`;
 
-  const ai = geminiClient();
-  const response = await ai.models.generateContent({
-    model: DIAGNOSIS_MODEL,
-    contents: userPrompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema,
-      temperature: 0.2,
-    },
-  });
+  const response = await withGemini((ai) =>
+    ai.models.generateContent({
+      model: DIAGNOSIS_MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema,
+        temperature: 0.2,
+      },
+    })
+  );
 
   const text = response.text;
   if (!text) throw new Error("Gemini refine 응답이 비어 있습니다.");

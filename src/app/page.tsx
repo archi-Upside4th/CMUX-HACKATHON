@@ -380,7 +380,11 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
                 근거 조문 인용 ({item.citations.length})
               </summary>
               <div className="mt-2">
-                <CitationsBlock citations={item.citations} obligationId={item.obligationId} />
+                <CitationsBlock
+                  citations={item.citations}
+                  obligationId={item.obligationId}
+                  unsupportedRefs={item.unsupportedRefs}
+                />
                 {obligationSourceUrl(item.obligationId) && (
                   <a
                     href={obligationSourceUrl(item.obligationId)}

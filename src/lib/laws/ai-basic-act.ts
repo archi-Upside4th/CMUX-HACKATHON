@@ -316,3 +316,51 @@ export function obligationsAsContext(): string {
 }
 
 export const KNOWN_OBLIGATION_IDS = AI_BASIC_ACT_OBLIGATIONS.map((o) => o.id);
+
+/**
+ * 텍스트에서 "제N조" / "제N조 제M항" / "제N조의2" 형태의 모든 조문 참조를 추출.
+ * AI가 reasoning·legalBasis에 환각으로 만든 조문 번호를 잡기 위함.
+ */
+export function extractArticleRefs(text: string): string[] {
+  const out: string[] = [];
+  const re = /제\s*(\d+)\s*조(?:의\s*(\d+))?(?:\s*제\s*(\d+)\s*항)?/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const article = `제${m[1]}조${m[2] ? `의${m[2]}` : ""}`;
+    out.push(article);
+  }
+  return out;
+}
+
+/** 의무 ID 하나가 다루는 모든 조문 번호 집합 ("제31조", "제2조" 등) */
+export function articlesForObligation(id: string): Set<string> {
+  const ob = OBLIGATION_INDEX.get(id);
+  if (!ob) return new Set();
+  const set = new Set<string>();
+  const re = /제\s*(\d+)\s*조(?:의\s*(\d+))?/;
+  for (const ex of ob.excerpts) {
+    const m = re.exec(ex.locator);
+    if (m) set.add(`제${m[1]}조${m[2] ? `의${m[2]}` : ""}`);
+  }
+  // article 필드도 포함 (예: "AI 기본법 제31조 (이용자에 대한 고지)")
+  const am = re.exec(ob.article);
+  if (am) set.add(`제${am[1]}조${am[2] ? `의${am[2]}` : ""}`);
+  return set;
+}
+
+/**
+ * AI가 항목 본문에 사용한 조문 번호들이 해당 의무의 실제 조문과 모순되는지 검사.
+ * 본문에서 발견된 "제N조" 중 의무 corpus에 없는 게 하나라도 있으면 unsupported로 표시.
+ */
+export function unsupportedArticleRefs(
+  obligationId: string,
+  ...texts: string[]
+): string[] {
+  const allowed = articlesForObligation(obligationId);
+  if (allowed.size === 0) return [];
+  const seen = new Set<string>();
+  for (const t of texts) {
+    for (const ref of extractArticleRefs(t)) seen.add(ref);
+  }
+  return [...seen].filter((ref) => !allowed.has(ref));
+}

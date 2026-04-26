@@ -150,6 +150,7 @@ export const ObligationDeepDiveSchema = z.object({
   blockers: z.array(z.string()),
   citations: z.array(ReportCitationSchema).default([]),
   verified: z.boolean().default(false),
+  unsupportedRefs: z.array(z.string()).default([]),
 });
 export type ObligationDeepDive = z.infer<typeof ObligationDeepDiveSchema>;
 

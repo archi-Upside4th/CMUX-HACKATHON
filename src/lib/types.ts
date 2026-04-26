@@ -58,7 +58,11 @@ export const DiagnosisItemSchema = z.object({
   verified: z
     .boolean()
     .default(false)
-    .describe("서버 검증 통과 여부 (인용이 corpus에 실재)"),
+    .describe("서버 검증 통과 여부 (인용이 corpus에 실재 + 본문 조문 참조 일치)"),
+  unsupportedRefs: z
+    .array(z.string())
+    .default([])
+    .describe("본문에 적혔지만 의무 corpus에 없는 환각 조문 번호 목록"),
 });
 export type DiagnosisItem = z.infer<typeof DiagnosisItemSchema>;
 

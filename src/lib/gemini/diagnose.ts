@@ -1,11 +1,12 @@
 import { Type } from "@google/genai";
-import { geminiClient, DIAGNOSIS_MODEL } from "./client";
+import { withGemini, DIAGNOSIS_MODEL } from "./client";
 import type { CompanyProfile, DiagnosisItem, DiagnosisResult } from "@/lib/types";
 import {
   KNOWN_OBLIGATION_IDS,
   isKnownObligationId,
   obligationsAsContext,
   relevantObligationsFor,
+  unsupportedArticleRefs,
   verifyCitation,
 } from "@/lib/laws/ai-basic-act";
 
@@ -114,28 +115,35 @@ interface RawResponse {
 }
 
 function verifyItems(raw: RawResponse): DiagnosisResult {
-  const items: DiagnosisItem[] = raw.items
-    .filter((it) => isKnownObligationId(it.obligationId))
-    .map((it) => {
-      const verifiedCitations = (it.citations ?? []).map((c) => {
-        const r = verifyCitation(it.obligationId, c.text);
-        return {
-          text: c.text,
-          verifiedLocator: r.ok ? r.locator : null,
-        };
-      });
-      const hasVerified = verifiedCitations.some(
-        (c) => c.verifiedLocator !== null
+  const items: DiagnosisItem[] = [];
+  for (const it of raw.items) {
+    if (!isKnownObligationId(it.obligationId)) {
+      console.warn(
+        `[diagnose] dropped item with unknown obligationId: ${it.obligationId}`
       );
-      return {
-        ...it,
-        citations: verifiedCitations,
-        verified:
-          hasVerified || it.applicability === "not_applicable"
-            ? hasVerified
-            : false,
-      };
+      continue;
+    }
+    const verifiedCitations = (it.citations ?? []).map((c) => {
+      const r = verifyCitation(it.obligationId, c.text);
+      return { text: c.text, verifiedLocator: r.ok ? r.locator : null };
     });
+    const hasVerifiedCitation = verifiedCitations.some(
+      (c) => c.verifiedLocator !== null
+    );
+    const unsupportedRefs = unsupportedArticleRefs(
+      it.obligationId,
+      it.reasoning ?? "",
+      it.legalBasis ?? "",
+      ...(it.actionItems ?? [])
+    );
+    const verified = hasVerifiedCitation && unsupportedRefs.length === 0;
+    items.push({
+      ...it,
+      citations: verifiedCitations,
+      verified,
+      unsupportedRefs,
+    });
+  }
 
   return {
     overallRisk: raw.overallRisk,
@@ -148,7 +156,6 @@ function verifyItems(raw: RawResponse): DiagnosisResult {
 export async function diagnoseAIBasicAct(
   profile: CompanyProfile
 ): Promise<DiagnosisResult> {
-  const ai = geminiClient();
   const relevant = relevantObligationsFor(
     profile.aiUsages,
     profile.usesForeignAI
@@ -172,16 +179,18 @@ ${relevant.map((o) => `- [${o.id}] ${o.title}`).join("\n") || "(없음)"}
 ## 작업
 items 배열에는 위 9개 의무 ID 모두 포함. not_applicable이라도 근거 인용 1건 첨부.`;
 
-  const response = await ai.models.generateContent({
-    model: DIAGNOSIS_MODEL,
-    contents: userPrompt,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema,
-      temperature: 0.15,
-    },
-  });
+  const response = await withGemini((ai) =>
+    ai.models.generateContent({
+      model: DIAGNOSIS_MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema,
+        temperature: 0.15,
+      },
+    })
+  );
 
   const text = response.text;
   if (!text) {

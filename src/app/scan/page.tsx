@@ -48,6 +48,7 @@ interface ScanResponse {
   serviceProfile: ServiceProfile | null;
   report: ComplianceReport | null;
   reportError: string | null;
+  truncatedSystems?: number;
 }
 
 const RISK_BADGE: Record<string, string> = {
@@ -205,6 +206,7 @@ export function ScanResultView({
         report={result.report}
         systems={result.systems}
         savedId={savedId}
+        truncatedSystems={result.truncatedSystems ?? 0}
       />
     );
   }
@@ -219,6 +221,7 @@ function ComplianceReportView({
   report,
   systems,
   savedId,
+  truncatedSystems,
 }: {
   repoUrl: string;
   commitSha: string;
@@ -226,6 +229,7 @@ function ComplianceReportView({
   report: ComplianceReport;
   systems: AISystem[];
   savedId?: string | null;
+  truncatedSystems?: number;
 }) {
   const systemNameById = new Map(systems.map((s) => [s.id, s.name]));
 
@@ -243,6 +247,12 @@ function ComplianceReportView({
           </Link>
         </div>
       )}
+
+      {truncatedSystems && truncatedSystems > 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-700">
+          ⚠ 시스템 {truncatedSystems}개가 컴플라이언스 리포트 입력에서 제외됐습니다 (상위 15개만 분석). 검출 시스템 전체 목록은 부록 A에서 확인하세요.
+        </div>
+      ) : null}
 
       {/* Executive Summary */}
       <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50 p-6 shadow-sm">
@@ -531,7 +541,11 @@ function ObligationRow({
       <div className="mt-3 space-y-2 text-xs text-slate-700">
         <Block title="판단 근거">{item.rationale}</Block>
         <Block title={`근거 조문 인용 (${item.citations.length})`}>
-          <CitationsBlock citations={item.citations} obligationId={item.obligationId} />
+          <CitationsBlock
+            citations={item.citations}
+            obligationId={item.obligationId}
+            unsupportedRefs={item.unsupportedRefs}
+          />
           {obligationSourceUrl(item.obligationId) && (
             <a
               href={obligationSourceUrl(item.obligationId)}

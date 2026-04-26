@@ -171,14 +171,22 @@ async function applyAbsenceRules(
     }
     if (!presenceHit) continue;
 
-    // absence: absencePatterns가 어느 파일에서도 매치 안 되면 → violation
+    // absence: absencePatterns가 어느 파일에서도 매치 안 되면 → violation.
+    // 단, fileGlob에 매치되는 후보 파일이 한 번이라도 read 실패하면
+    // 부재를 확신할 수 없으므로 violation을 emit하지 않는다 (false positive 방지).
     let absenceHit = false;
+    let unreadCandidates = 0;
+    let readableCandidates = 0;
     for (const f of allFiles) {
       if (absenceHit) break;
       for (const ap of rule.absencePatterns) {
         if (ap.fileGlob && !minimatch(f.relPath, ap.fileGlob)) continue;
         const txt = await readCollectedFile(f);
-        if (!txt) continue;
+        if (txt === null) {
+          unreadCandidates++;
+          continue;
+        }
+        readableCandidates++;
         const rx = safeGlobalRegex(ap.pattern);
         if (!rx) continue;
         if (rx.test(txt)) {
@@ -187,7 +195,7 @@ async function applyAbsenceRules(
         }
       }
     }
-    if (!absenceHit) {
+    if (!absenceHit && readableCandidates > 0 && unreadCandidates === 0) {
       out.push({
         kind: "code_pattern",
         ruleId: rule.id,
