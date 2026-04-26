@@ -111,7 +111,7 @@ export default function Home() {
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       <header className="mb-8">
         <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-600 mb-2">
-          회사 프로필 → AI 기본법 30초 진단
+          AI 기본법 30초 진단
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           우리 회사가 위반할 수 있는 의무는 무엇인가?
