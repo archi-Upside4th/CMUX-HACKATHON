@@ -1,6 +1,7 @@
 # AI 기본법 검증 SaaS 서비스
 
 「AI 기본법 검증 SaaS 서비스」는 서비스 정보 입력과 코드 저장소 분석만으로 적용 가능한 법적 의무와 리스크를 진단해 주는 AI 컴플라이언스 자동화 도구입니다.
+URL: https://cmux-hackathon.vercel.app
 
 ## 📌 목차 (Table of Contents)
 - [개요](#개요)
