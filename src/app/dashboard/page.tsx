@@ -8,13 +8,12 @@ import {
   clearAll,
   type HistoryEntry,
 } from "@/lib/storage/history";
-import { Icon } from "@/components/Icon";
 
-const RISK_DOT: Record<string, string> = {
-  high: "bg-rose-500",
-  medium: "bg-amber-500",
-  low: "bg-emerald-500",
-  none: "bg-slate-300",
+const RISK_BADGE: Record<string, string> = {
+  high: "bg-rose-50 text-rose-700 border border-rose-200",
+  medium: "bg-amber-50 text-amber-700 border border-amber-200",
+  low: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  none: "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
 export default function DashboardPage() {
@@ -32,13 +31,13 @@ export default function DashboardPage() {
   }
 
   function onDelete(id: string) {
-    if (!confirm("삭제할까요?")) return;
+    if (!confirm("이 이력을 삭제할까요?")) return;
     deleteEntry(id);
     refresh();
   }
 
   function onClearAll() {
-    if (!confirm("전체 삭제할까요?")) return;
+    if (!confirm("모든 이력을 삭제할까요? (되돌릴 수 없음)")) return;
     clearAll();
     refresh();
   }
@@ -51,39 +50,82 @@ export default function DashboardPage() {
   const highRiskCount = entries.filter((e) => e.overallRisk === "high").length;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-16">
-      <header className="mb-10">
-        <h1 className="text-[44px] sm:text-[56px] font-semibold tracking-[-0.02em] leading-none text-slate-900">
-          대시보드
-        </h1>
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+      <header className="mb-8">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-600 mb-1">
+              LexOS · AI 기본법 컴플라이언스
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+              대시보드
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              최근 스캔/진단 이력을 한눈에. (브라우저 localStorage 저장 — 최신 50건)
+            </p>
+          </div>
+        </div>
       </header>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-        <ActionCard
+      {/* 빠른 진입 카드 */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <Link
           href="/scan"
-          title="스캔"
-          caption="GitHub 저장소 분석"
-          iconName="scan"
-        />
-        <ActionCard
+          className="card-hover group rounded-2xl border border-slate-200 bg-white hover:border-indigo-300 p-6 transition"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="grid place-items-center h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-sm shadow-indigo-200">
+                ⌘
+              </span>
+              <h2 className="text-lg font-semibold">코드 스캔</h2>
+            </div>
+            <span className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition">
+              →
+            </span>
+          </div>
+          <p className="text-sm text-slate-500">
+            GitHub URL 한 줄로 AI 시스템 식별 + 의무 매핑.
+          </p>
+        </Link>
+
+        <Link
           href="/"
-          title="진단"
-          caption="회사 프로필 진단"
-          iconName="clipboard"
-        />
+          className="card-hover group rounded-2xl border border-slate-200 bg-white hover:border-fuchsia-300 p-6 transition"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="grid place-items-center h-9 w-9 rounded-lg bg-gradient-to-br from-fuchsia-500 to-rose-500 text-white shadow-sm shadow-fuchsia-200">
+                ✦
+              </span>
+              <h2 className="text-lg font-semibold">회사 진단</h2>
+            </div>
+            <span className="text-slate-400 group-hover:text-fuchsia-600 group-hover:translate-x-0.5 transition">
+              →
+            </span>
+          </div>
+          <p className="text-sm text-slate-500">
+            회사 프로필 입력 → Gemini가 9개 의무별 적용 여부 매핑.
+          </p>
+        </Link>
       </section>
 
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
-        <Stat label="이력" value={entries.length} />
-        <Stat label="스캔" value={scanCount} />
-        <Stat label="진단" value={diagnoseCount} />
-        <Stat label="HIGH" value={highRiskCount} highlight={highRiskCount > 0} />
+      {/* KPI */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <Kpi label="총 이력" value={entries.length} />
+        <Kpi label="코드 스캔" value={scanCount} />
+        <Kpi label="회사 진단" value={diagnoseCount} />
+        <Kpi label="HIGH 위험" value={highRiskCount} accent="red" />
       </section>
 
-      <section className="rounded-3xl bg-white p-6 sm:p-8">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex gap-1 text-[13px]">
-            <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
+      {/* 필터 + 이력 */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-2 text-sm">
+            <FilterChip
+              active={filter === "all"}
+              onClick={() => setFilter("all")}
+            >
               전체
             </FilterChip>
             <FilterChip
@@ -102,7 +144,7 @@ export default function DashboardPage() {
           {entries.length > 0 && (
             <button
               onClick={onClearAll}
-              className="text-[12px] text-slate-400 hover:text-rose-600 transition"
+              className="text-xs text-slate-400 hover:text-rose-600 transition"
             >
               전체 삭제
             </button>
@@ -110,55 +152,63 @@ export default function DashboardPage() {
         </div>
 
         {!hydrated ? (
-          <div className="text-sm text-slate-400 py-12 text-center">로딩…</div>
+          <div className="text-sm text-slate-400 py-8 text-center">로딩…</div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl bg-[var(--surface-2)] p-12 text-center text-sm text-slate-400">
-            이력 없음
+          <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-400 text-sm">
+            {entries.length === 0
+              ? "아직 이력이 없습니다. 위 카드에서 스캔 또는 진단을 시작하세요."
+              : "필터에 해당하는 이력이 없습니다."}
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-200">
             {filtered.map((e) => (
               <li
                 key={e.id}
-                className="py-4 flex items-center justify-between gap-3 group"
+                className="py-3 flex items-start justify-between gap-3"
               >
-                <Link
-                  href={`/dashboard/${e.id}`}
-                  className="min-w-0 flex-1 flex items-center gap-3 hover:opacity-80 transition"
-                >
-                  <span
-                    className={`shrink-0 h-2 w-2 rounded-full ${RISK_DOT[e.overallRisk] ?? RISK_DOT.none}`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[11px] uppercase tracking-wider text-slate-400">
-                        {e.type === "scan" ? "스캔" : "진단"}
-                      </span>
-                      <span className="text-[11px] text-slate-300">·</span>
-                      <span className="text-[11px] text-slate-400">
-                        {fmtDate(e.createdAt)}
-                      </span>
-                    </div>
-                    <div className="text-[15px] text-slate-900 truncate">
-                      {e.title}
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded ${
+                        e.type === "scan"
+                          ? "bg-indigo-100 text-indigo-700"
+                          : "bg-fuchsia-100 text-fuchsia-700"
+                      }`}
+                    >
+                      {e.type === "scan" ? "스캔" : "진단"}
+                    </span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded ${
+                        RISK_BADGE[e.overallRisk] ?? RISK_BADGE.none
+                      }`}
+                    >
+                      {e.overallRisk.toUpperCase()}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {fmtDate(e.createdAt)}
+                    </span>
                   </div>
-                  <span className="hidden sm:inline text-[12px] text-slate-400 tabular-nums shrink-0">
+                  <div className="text-sm text-slate-800 truncate">{e.title}</div>
+                  <div className="text-xs text-slate-400 mt-0.5">
                     {e.type === "scan"
-                      ? `시스템 ${e.systemCount ?? 0}`
-                      : `의무 ${e.obligationCount ?? 0}`}
-                  </span>
-                  <span className="text-slate-300 group-hover:text-slate-900 group-hover:translate-x-0.5 transition">
-                    <Icon name="arrow-right" size={18} />
-                  </span>
-                </Link>
-                <button
-                  onClick={() => onDelete(e.id)}
-                  className="shrink-0 p-1.5 rounded-full text-slate-300 hover:bg-slate-100 hover:text-rose-600 transition"
-                  aria-label="삭제"
-                >
-                  <Icon name="trash" size={16} />
-                </button>
+                      ? `시스템 ${e.systemCount ?? 0}개`
+                      : `의무 ${e.obligationCount ?? 0}개 적용`}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    href={`/dashboard/${e.id}`}
+                    className="text-xs text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
+                  >
+                    보기
+                  </Link>
+                  <button
+                    onClick={() => onDelete(e.id)}
+                    className="text-xs text-slate-400 hover:text-rose-600 transition"
+                  >
+                    삭제
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -168,55 +218,30 @@ export default function DashboardPage() {
   );
 }
 
-function ActionCard({
-  href,
-  title,
-  caption,
-  iconName,
-}: {
-  href: string;
-  title: string;
-  caption: string;
-  iconName: "scan" | "clipboard";
-}) {
-  return (
-    <Link
-      href={href}
-      className="group rounded-3xl bg-slate-900 text-white p-7 flex items-center justify-between hover:bg-black transition"
-    >
-      <div className="flex items-center gap-4">
-        <span className="grid place-items-center h-10 w-10 rounded-full bg-white/10 text-white">
-          <Icon name={iconName} size={20} />
-        </span>
-        <div>
-          <div className="text-[20px] font-semibold tracking-tight">{title}</div>
-          <div className="text-[12px] text-white/55">{caption}</div>
-        </div>
-      </div>
-      <span className="grid place-items-center h-9 w-9 rounded-full bg-white text-slate-900 group-hover:translate-x-0.5 transition">
-        <Icon name="arrow-up-right" size={16} />
-      </span>
-    </Link>
-  );
-}
-
-function Stat({
+function Kpi({
   label,
   value,
-  highlight,
+  accent,
 }: {
   label: string;
   value: number;
-  highlight?: boolean;
+  accent?: "red";
 }) {
+  const danger = accent === "red" && value > 0;
   return (
-    <div className="rounded-3xl bg-white p-5">
-      <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-2">
+    <div
+      className={`card-hover rounded-2xl border p-4 ${
+        danger
+          ? "border-rose-200 bg-gradient-to-br from-rose-50 to-white"
+          : "border-slate-200 bg-white"
+      }`}
+    >
+      <div className="text-[11px] uppercase tracking-wider text-slate-400 mb-1">
         {label}
       </div>
       <div
-        className={`text-[40px] font-semibold tabular-nums leading-none tracking-tight ${
-          highlight ? "text-rose-600" : "text-slate-900"
+        className={`text-3xl font-semibold tabular-nums ${
+          danger ? "text-rose-600" : "text-slate-900"
         }`}
       >
         {value}
@@ -237,10 +262,10 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`px-3.5 py-1.5 rounded-full transition ${
+      className={`px-3 py-1 rounded-md border transition ${
         active
-          ? "bg-slate-900 text-white"
-          : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          ? "border-indigo-500 bg-indigo-100 text-indigo-700"
+          : "border-slate-300 bg-white text-slate-500 hover:border-indigo-300 hover:text-indigo-700"
       }`}
     >
       {children}

@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LexOS",
-  description: "AI 기본법 컴플라이언스",
+  title: "LexOS — AI 규제 자동 대응 플랫폼",
+  description:
+    "AI기본법 30초 진단. 회사 프로필 또는 GitHub URL → 9개 의무 자동 매핑.",
 };
 
 export default function RootLayout({
@@ -31,9 +32,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col text-slate-900">
         <TopNav />
         <div className="flex-1">{children}</div>
-        <footer className="py-10 text-center text-[11px] text-slate-400 tracking-wide">
-          © {new Date().getFullYear()} LexOS
-        </footer>
+        <SiteFooter />
       </body>
     </html>
   );
@@ -41,20 +40,23 @@ export default function RootLayout({
 
 function TopNav() {
   return (
-    <header className="sticky top-0 z-10 bg-[var(--background)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--background)]/70">
-      <div className="mx-auto w-full max-w-6xl px-6 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      <div className="mx-auto w-full max-w-6xl px-6 h-14 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2 group">
-          <span className="grid place-items-center h-7 w-7 rounded-full bg-slate-900 text-white text-[12px] font-semibold tracking-tight">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center font-bold text-sm text-white shadow-sm shadow-indigo-300/40">
             L
-          </span>
-          <span className="font-semibold tracking-tight text-slate-900">
+          </div>
+          <span className="font-semibold tracking-tight text-slate-900 group-hover:text-indigo-600 transition">
             LexOS
           </span>
+          <span className="text-xs text-slate-400 hidden sm:inline">
+            · AI기본법 컴플라이언스
+          </span>
         </Link>
-        <nav className="flex items-center gap-1 text-[13px]">
+        <nav className="flex items-center gap-1 text-sm">
           <NavLink href="/dashboard" label="대시보드" />
-          <NavLink href="/scan" label="스캔" />
-          <NavLink href="/" label="진단" />
+          <NavLink href="/scan" label="코드 스캔" />
+          <NavLink href="/" label="회사 진단" />
         </nav>
       </div>
     </header>
@@ -65,9 +67,18 @@ function NavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="px-3 py-1.5 rounded-full text-slate-500 hover:bg-slate-900 hover:text-white transition"
+      className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
     >
       {label}
     </Link>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="border-t border-slate-200 bg-white/40 mt-12 py-6 text-center text-xs text-slate-400">
+      © {new Date().getFullYear()} LexOS · 본 도구의 결과는 자동 추론이며 법적
+      자문이 아닙니다.
+    </footer>
   );
 }

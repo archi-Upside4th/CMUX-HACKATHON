@@ -7,7 +7,6 @@ import {
   obligationLabel,
   obligationPenalty,
 } from "@/lib/laws/labels";
-import { Icon } from "./Icon";
 
 interface Props {
   obligationId: string;
@@ -27,52 +26,52 @@ export function ObligationChip({ obligationId, reason, compact }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center gap-1 rounded-full bg-slate-900 text-white hover:bg-black transition ${
-          compact ? "px-2.5 py-0.5 text-[10px]" : "px-3 py-1 text-[12px]"
+        className={`text-left rounded border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition ${
+          compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs"
         }`}
         title={article}
       >
-        <span>{label}</span>
-        <Icon name={open ? "chevron-down" : "chevron-right"} size={10} />
+        <span className="font-medium">{label}</span>
+        <span className="ml-1 font-mono text-indigo-500/80">[{obligationId}]</span>
+        <span className="ml-1 text-indigo-500/70">{open ? "▾" : "▸"}</span>
       </button>
       {open && (
-        <div className="mt-1.5 w-full max-w-md rounded-2xl bg-white p-3 text-[12px] text-slate-800 space-y-2 shadow-sm">
-          <div>
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">
-              조항
-            </div>
-            <div className="font-medium text-slate-900">{article}</div>
+        <div className="mt-1 w-full max-w-md rounded border border-indigo-200 bg-indigo-50 p-2 text-xs text-slate-800 space-y-1.5">
+          <div className="text-[10px] uppercase tracking-wider text-indigo-600">
+            근거 조항
           </div>
+          <div className="font-medium text-indigo-700">{article}</div>
           {reason && (
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">
-                사유
+            <>
+              <div className="text-[10px] uppercase tracking-wider text-indigo-600 pt-1">
+                트리거 사유
               </div>
-              <div className="leading-relaxed">{reason}</div>
-            </div>
+              <div className="text-slate-800 leading-relaxed">{reason}</div>
+            </>
           )}
           {excerpts.length > 0 && (
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">
-                발췌
+            <>
+              <div className="text-[10px] uppercase tracking-wider text-indigo-600 pt-1">
+                조문 발췌
               </div>
-              <ul className="space-y-1.5">
+              <ul className="space-y-1">
                 {excerpts.map((e) => (
                   <li
                     key={e.locator}
-                    className="rounded-xl bg-[var(--surface-2)] p-2 text-[11px] leading-snug"
+                    className="border-l-2 border-indigo-400 pl-2 text-[11px] text-slate-800 leading-snug"
                   >
-                    <div className="font-mono text-[10px] text-slate-400 mb-0.5">
+                    <span className="text-indigo-600 font-mono mr-1">
                       {e.locator}
-                    </div>
+                    </span>
                     {e.text}
                   </li>
                 ))}
               </ul>
-            </div>
+            </>
           )}
           {penalty && (
-            <div className="text-[11px] text-amber-700 pt-1">
+            <div className="pt-1 text-[11px] text-amber-700">
+              <span className="text-amber-600/80 font-mono mr-1">제재:</span>
               {penalty}
             </div>
           )}
