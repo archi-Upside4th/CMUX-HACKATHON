@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>LexOS · 벤치마크</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #f6f5ef;
+        --surface: #fff;
+        --ink: #0c0c0d;
+        --muted: #6b6b73;
+        --border: #e6e4dc;
+        --vuln: #e11d48;
+        --safe: #059669;
+        --accent: #4338ca;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+          "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+        letter-spacing: -0.005em;
+      }
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+      }
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      h1 {
+        font-size: 44px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .stat {
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 18px 20px;
+      }
+      .stat .label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .stat .value {
+        font-size: 32px;
+        font-weight: 600;
+        margin-top: 4px;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat.vuln .value {
+        color: var(--vuln);
+      }
+      .stat.safe .value {
+        color: var(--safe);
+      }
+      .card {
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 22px 22px 28px;
+        margin-bottom: 12px;
+      }
+      .card h2 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 14px;
+      }
+      .card .sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: -8px;
+        margin-bottom: 14px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 10px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      td.num {
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+      .pill {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 500;
+      }
+      .pill.vuln {
+        background: #ffe4e6;
+        color: var(--vuln);
+      }
+      .pill.safe {
+        background: #d1fae5;
+        color: var(--safe);
+      }
+      .empty {
+        text-align: center;
+        padding: 60px;
+        color: var(--muted);
+      }
+      .err {
+        color: var(--vuln);
+        font-size: 11px;
+      }
+      canvas {
+        max-height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>벤치마크</h1>
+          <div class="meta" id="meta">로딩…</div>
+        </div>
+        <button
+          onclick="location.reload()"
+          style="
+            border: 0;
+            background: var(--ink);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            cursor: pointer;
+          "
+        >
+          새로고침
+        </button>
+      </header>
+
+      <section class="grid" id="kpis"></section>
+
+      <section class="row">
+        <div class="card">
+          <h2>지연 시간 (ms)</h2>
+          <div class="sub">/api/scan 왕복 시간 — 낮을수록 좋음</div>
+          <canvas id="latencyChart"></canvas>
+        </div>
+        <div class="card">
+          <h2>적용 의무 수</h2>
+          <div class="sub">취약 레포는 많이, 안전 레포는 적게</div>
+          <canvas id="obligationsChart"></canvas>
+        </div>
+      </section>
+
+      <section class="row">
+        <div class="card">
+          <h2>RAG 검증 통과율</h2>
+          <div class="sub">verified / applicable — 높을수록 신뢰 가능</div>
+          <canvas id="verificationChart"></canvas>
+        </div>
+        <div class="card">
+          <h2>환각 적발 수</h2>
+          <div class="sub">unsupportedRefs 합계 — 0이 이상적</div>
+          <canvas id="hallucinationChart"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>레포별 상세</h2>
+        <div id="tableHost"></div>
+      </section>
+    </main>
+
+    <script>
+      const VULN = "#e11d48";
+      const SAFE = "#059669";
+
+      async function load() {
+        const res = await fetch("results.json", { cache: "no-store" });
+        if (!res.ok) {
+          document.querySelector("main").innerHTML =
+            '<div class="empty">results.json이 없습니다. 먼저 <code>node scripts/benchmark-scan.mjs</code> 실행.</div>';
+          return;
+        }
+        const data = await res.json();
+        render(data);
+      }
+
+      function render({ generatedAt, host, results }) {
+        document.getElementById("meta").textContent = `${new Date(
+          generatedAt
+        ).toLocaleString("ko-KR")} · ${host} · n=${results.length}`;
+
+        const ok = results.filter((r) => !r.error);
+        const vuln = ok.filter((r) => r.expected === "vuln");
+        const safe = ok.filter((r) => r.expected === "safe");
+
+        const avgLatency =
+          ok.reduce((s, r) => s + (r.latencyMs ?? 0), 0) / Math.max(1, ok.length);
+        const avgVulnObl =
+          vuln.reduce((s, r) => s + (r.obligationsApplicable ?? 0), 0) /
+          Math.max(1, vuln.length);
+        const avgSafeObl =
+          safe.reduce((s, r) => s + (r.obligationsApplicable ?? 0), 0) /
+          Math.max(1, safe.length);
+        const totalApp = ok.reduce(
+          (s, r) => s + (r.obligationsApplicable ?? 0),
+          0
+        );
+        const totalVer = ok.reduce(
+          (s, r) => s + (r.obligationsVerified ?? 0),
+          0
+        );
+        const overallVerificationRate = totalApp
+          ? Math.round((totalVer / totalApp) * 100)
+          : 0;
+        const totalHalluc = ok.reduce(
+          (s, r) => s + (r.hallucinationCount ?? 0),
+          0
+        );
+
+        document.getElementById("kpis").innerHTML = `
+          <div class="stat"><div class="label">평균 지연</div><div class="value">${Math.round(
+            avgLatency
+          )}<span style="font-size:14px;color:var(--muted)">ms</span></div></div>
+          <div class="stat vuln"><div class="label">취약 레포 평균 의무</div><div class="value">${avgVulnObl.toFixed(
+            1
+          )}</div></div>
+          <div class="stat safe"><div class="label">안전 레포 평균 의무</div><div class="value">${avgSafeObl.toFixed(
+            1
+          )}</div></div>
+          <div class="stat"><div class="label">RAG 검증 통과율</div><div class="value">${overallVerificationRate}<span style="font-size:14px;color:var(--muted)">%</span></div></div>
+        `;
+
+        const labels = results.map((r) => r.label);
+        const colors = results.map((r) =>
+          r.expected === "vuln" ? VULN : SAFE
+        );
+
+        chart("latencyChart", "bar", {
+          labels,
+          datasets: [
+            {
+              label: "ms",
+              data: results.map((r) => r.latencyMs ?? 0),
+              backgroundColor: colors,
+              borderRadius: 6,
+            },
+          ],
+        });
+
+        chart("obligationsChart", "bar", {
+          labels,
+          datasets: [
+            {
+              label: "applicable",
+              data: results.map((r) => r.obligationsApplicable ?? 0),
+              backgroundColor: colors,
+              borderRadius: 6,
+            },
+          ],
+        });
+
+        chart(
+          "verificationChart",
+          "bar",
+          {
+            labels,
+            datasets: [
+              {
+                label: "verified %",
+                data: results.map((r) =>
+                  r.verificationRate == null
+                    ? 0
+                    : Math.round(r.verificationRate * 100)
+                ),
+                backgroundColor: colors,
+                borderRadius: 6,
+              },
+            ],
+          },
+          { y: { suggestedMax: 100, ticks: { callback: (v) => v + "%" } } }
+        );
+
+        chart("hallucinationChart", "bar", {
+          labels,
+          datasets: [
+            {
+              label: "unsupportedRefs",
+              data: results.map((r) => r.hallucinationCount ?? 0),
+              backgroundColor: colors,
+              borderRadius: 6,
+            },
+          ],
+        });
+
+        renderTable(results);
+      }
+
+      function chart(id, type, data, scaleOverride) {
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        if (ctx._inst) ctx._inst.destroy();
+        ctx._inst = new Chart(ctx, {
+          type,
+          data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { padding: 10 },
+            },
+            scales: {
+              x: {
+                ticks: { font: { size: 10 } },
+                grid: { display: false },
+              },
+              y: {
+                grid: { color: "#eee" },
+                ticks: { font: { size: 10 } },
+                ...(scaleOverride?.y ?? {}),
+              },
+            },
+          },
+        });
+      }
+
+      function renderTable(rows) {
+        const headers = [
+          "레포",
+          "분류",
+          "지연ms",
+          "시스템",
+          "적용",
+          "검증",
+          "환각",
+          "P1",
+          "위험",
+          "비고",
+        ];
+        const html = `
+          <table>
+            <thead>
+              <tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${rows
+                .map((r) => {
+                  const cls = r.expected === "vuln" ? "vuln" : "safe";
+                  const note = r.error
+                    ? `<span class="err">${r.error}</span>`
+                    : r.reportError
+                      ? `<span class="err">report: ${r.reportError.slice(
+                          0,
+                          40
+                        )}</span>`
+                      : "";
+                  return `
+                  <tr>
+                    <td>${r.repo}<div style="font-size:10px;color:var(--muted)">${r.label}</div></td>
+                    <td><span class="pill ${cls}">${r.expected}</span></td>
+                    <td class="num">${r.latencyMs ?? "-"}</td>
+                    <td class="num">${r.systems ?? "-"}</td>
+                    <td class="num">${r.obligationsApplicable ?? "-"}</td>
+                    <td class="num">${r.obligationsVerified ?? "-"}/${r.obligationsApplicable ?? "-"}</td>
+                    <td class="num">${r.hallucinationCount ?? "-"}</td>
+                    <td class="num">${r.p1Urgent ?? "-"}</td>
+                    <td>${r.overallRisk ?? "-"}</td>
+                    <td>${note}</td>
+                  </tr>
+                `;
+                })
+                .join("")}
+            </tbody>
+          </table>
+        `;
+        document.getElementById("tableHost").innerHTML = html;
+      }
+
+      load();
+    </script>
+  </body>
+</html>

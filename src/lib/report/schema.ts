@@ -134,7 +134,8 @@ export type SystemAnalysis = z.infer<typeof SystemAnalysisSchema>;
 
 export const ReportCitationSchema = z.object({
   text: z.string(),
-  verifiedLocator: z.string().nullable(),
+  // Gemini 응답엔 없고 서버 후처리로 채움 → optional + default null
+  verifiedLocator: z.string().nullish().default(null),
 });
 export type ReportCitation = z.infer<typeof ReportCitationSchema>;
 

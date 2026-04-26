@@ -35,7 +35,8 @@ export const CitationSchema = z.object({
   text: z.string().describe("AI 기본법 조문에서 발췌한 인용 (corpus 내 부분 문자열)"),
   verifiedLocator: z
     .string()
-    .nullable()
+    .nullish()
+    .default(null)
     .describe("검증 후 매칭된 조문 위치. null이면 검증 실패"),
 });
 export type Citation = z.infer<typeof CitationSchema>;
