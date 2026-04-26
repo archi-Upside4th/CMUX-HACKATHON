@@ -5,29 +5,36 @@ import type { AIUsage, DiagnosisResult, CompanyProfile } from "@/lib/types";
 import { saveEntry } from "@/lib/storage/history";
 import { CitationsBlock, VerifiedBadge } from "@/components/CitationsBlock";
 import { obligationSourceUrl } from "@/lib/laws/labels";
+import { Icon } from "@/components/Icon";
 
 const AI_OPTIONS: { value: AIUsage; label: string }[] = [
-  { value: "chatbot", label: "챗봇/대화형" },
-  { value: "recommendation", label: "추천 엔진" },
-  { value: "generative_text", label: "텍스트 생성형" },
-  { value: "generative_image", label: "이미지/영상 생성형" },
-  { value: "auto_decision", label: "자동심사/자동결정 (채용·대출 등)" },
+  { value: "chatbot", label: "챗봇" },
+  { value: "recommendation", label: "추천" },
+  { value: "generative_text", label: "텍스트 생성" },
+  { value: "generative_image", label: "이미지 생성" },
+  { value: "auto_decision", label: "자동결정" },
   { value: "biometric", label: "생체인식" },
-  { value: "medical", label: "의료 진단/판독" },
-  { value: "none", label: "사용 안 함" },
+  { value: "medical", label: "의료 판독" },
+  { value: "none", label: "없음" },
 ];
 
-const RISK_BADGE: Record<string, string> = {
-  high: "bg-rose-50 text-rose-700 border border-rose-200",
-  medium: "bg-amber-50 text-amber-700 border border-amber-200",
-  low: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  none: "bg-slate-100 text-slate-600 border border-slate-200",
+const RISK_PILL: Record<string, string> = {
+  high: "bg-rose-100 text-rose-700",
+  medium: "bg-amber-100 text-amber-700",
+  low: "bg-emerald-100 text-emerald-700",
+  none: "bg-slate-100 text-slate-600",
 };
 
-const APP_BADGE: Record<string, string> = {
+const APP_PILL: Record<string, string> = {
   applicable: "bg-rose-100 text-rose-700",
   conditional: "bg-amber-100 text-amber-700",
   not_applicable: "bg-slate-100 text-slate-500",
+};
+
+const APP_LABEL: Record<string, string> = {
+  applicable: "적용",
+  conditional: "조건부",
+  not_applicable: "비적용",
 };
 
 export default function Home() {
@@ -44,7 +51,6 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
 
-  // 진단 결과 자동 저장
   useEffect(() => {
     if (!result) return;
     saveEntry({
@@ -98,53 +104,38 @@ export default function Home() {
   function loadDemoProfile() {
     setProfile({
       name: "데모핀테크",
-      industry: "핀테크 (대출 심사)",
+      industry: "핀테크",
       employeeCount: 120,
       annualRevenueKRW: 30_000_000_000,
       aiUsages: ["auto_decision", "chatbot", "generative_text"],
       usesForeignAI: true,
-      notes: "OpenAI GPT-4o 기반 챗봇과 자체 ML 신용평가 모델 운영 중. 워터마크 미적용.",
+      notes: "OpenAI 기반 챗봇 + 자체 신용평가 모델",
     });
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <header className="mb-8">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-600 mb-2">
-          회사 프로필 → AI 기본법 30초 진단
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-          우리 회사가 위반할 수 있는 의무는 무엇인가?
+    <main className="mx-auto w-full max-w-5xl px-6 pt-6 pb-16">
+      <header className="mb-10 flex items-end justify-between gap-4 flex-wrap">
+        <h1 className="text-[44px] sm:text-[56px] font-semibold tracking-[-0.02em] leading-none text-slate-900">
+          진단
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          입력값과 검증된 법령 코퍼스를 매칭해 9개 의무별 적용·위험·근거 조문을
-          한 번에 확인합니다.
-        </p>
+        <button
+          type="button"
+          onClick={loadDemoProfile}
+          className="text-[12px] text-slate-400 hover:text-slate-900 transition"
+        >
+          데모 입력
+        </button>
       </header>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <form
-          onSubmit={onSubmit}
-          className="card-hover rounded-2xl border border-slate-200 bg-white p-6 space-y-5 shadow-sm"
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">회사 프로필</h2>
-            <button
-              type="button"
-              onClick={loadDemoProfile}
-              className="text-xs text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
-            >
-              데모 프로필 자동입력
-            </button>
-          </div>
-
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <form onSubmit={onSubmit} className="rounded-3xl bg-white p-7 space-y-5">
           <Field label="회사명">
             <input
               required
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               className={inputCls}
-              placeholder="예: 데모핀테크"
             />
           </Field>
 
@@ -156,12 +147,11 @@ export default function Home() {
                 setProfile({ ...profile, industry: e.target.value })
               }
               className={inputCls}
-              placeholder="예: 핀테크, 이커머스, SaaS"
             />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="임직원 수">
+            <Field label="임직원">
               <input
                 type="number"
                 min={1}
@@ -176,7 +166,7 @@ export default function Home() {
                 className={inputCls}
               />
             </Field>
-            <Field label="연매출 (원)">
+            <Field label="연매출">
               <input
                 type="number"
                 min={0}
@@ -193,8 +183,8 @@ export default function Home() {
             </Field>
           </div>
 
-          <Field label="사용 중인 AI (복수 선택)">
-            <div className="grid grid-cols-2 gap-2">
+          <Field label="AI 유형">
+            <div className="flex flex-wrap gap-1.5">
               {AI_OPTIONS.map((opt) => {
                 const checked = profile.aiUsages.includes(opt.value);
                 return (
@@ -202,10 +192,10 @@ export default function Home() {
                     type="button"
                     key={opt.value}
                     onClick={() => toggleUsage(opt.value)}
-                    className={`text-left text-sm rounded-md px-3 py-2 border transition ${
+                    className={`text-[13px] rounded-full px-3.5 py-1.5 transition ${
                       checked
-                        ? "border-indigo-500 bg-indigo-100 text-indigo-700"
-                        : "border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/40"
+                        ? "bg-slate-900 text-white"
+                        : "bg-[var(--surface-2)] text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     {opt.label}
@@ -215,55 +205,48 @@ export default function Home() {
             </div>
           </Field>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+          <label className="flex items-center justify-between gap-3 text-[13px] py-1">
+            <span className="text-slate-700">해외 AI 직접 호출</span>
+            <Toggle
               checked={profile.usesForeignAI}
-              onChange={(e) =>
-                setProfile({ ...profile, usesForeignAI: e.target.checked })
-              }
-              className="h-4 w-4"
+              onChange={(v) => setProfile({ ...profile, usesForeignAI: v })}
             />
-            <span>해외 AI 모델/서비스 직접 호출 (OpenAI, Anthropic 등)</span>
           </label>
 
-          <Field label="추가 메모 (선택)">
+          <Field label="메모">
             <textarea
               value={profile.notes}
               onChange={(e) =>
                 setProfile({ ...profile, notes: e.target.value })
               }
-              className={`${inputCls} min-h-[72px]`}
-              placeholder="현재 운영 중인 AI 시스템, 알려진 미준수 사항 등"
+              className={`${inputCls} min-h-[80px] resize-none`}
             />
           </Field>
 
           <button
             type="submit"
             disabled={loading || profile.aiUsages.length === 0}
-            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 px-4 py-3 font-medium transition"
+            className="w-full rounded-full bg-slate-900 hover:bg-black disabled:bg-slate-200 disabled:text-slate-400 text-white px-4 py-3.5 text-[14px] font-medium transition"
           >
-            {loading ? "진단 중…" : "AI기본법 30초 진단 실행"}
+            {loading ? "진단 중…" : "진단 실행"}
           </button>
         </form>
 
         <div className="space-y-4">
           {!result && !error && !loading && (
-            <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-slate-400">
-              왼쪽 폼을 채운 뒤 진단을 실행하면<br />
-              결과가 여기에 표시됩니다.
+            <div className="rounded-3xl bg-[var(--surface-2)] p-12 text-center text-sm text-slate-400">
+              결과 영역
             </div>
           )}
 
           {loading && (
-            <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-6 text-indigo-700 animate-pulse">
-              Gemini가 회사 프로필과 AI기본법 조항을 매칭 중…
+            <div className="rounded-3xl bg-white p-7 text-slate-500 animate-pulse">
+              매칭 중…
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-              <strong className="block mb-1">오류</strong>
+            <div className="rounded-3xl bg-rose-50 p-7 text-rose-700">
               <pre className="text-xs whitespace-pre-wrap">{error}</pre>
             </div>
           )}
@@ -275,6 +258,32 @@ export default function Home() {
   );
 }
 
+function Toggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-10 rounded-full transition ${
+        checked ? "bg-slate-900" : "bg-slate-200"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition ${
+          checked ? "translate-x-[18px]" : "translate-x-0.5"
+        }`}
+      />
+    </button>
+  );
+}
+
 function VerificationStats({ items }: { items: DiagnosisResult["items"] }) {
   const applicable = items.filter((i) => i.applicability !== "not_applicable");
   const verified = applicable.filter((i) => i.verified).length;
@@ -282,18 +291,17 @@ function VerificationStats({ items }: { items: DiagnosisResult["items"] }) {
   const allOk = total > 0 && verified === total;
   return (
     <div
-      className={`text-xs rounded border px-3 py-2 ${
+      className={`inline-flex items-center gap-2 text-[12px] rounded-full px-3 py-1.5 ${
         allOk
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-amber-200 bg-amber-50 text-amber-700"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-amber-100 text-amber-700"
       }`}
     >
-      <span className="font-mono mr-2">
+      <Icon name={allOk ? "shield-check" : "spark"} size={14} />
+      <span className="font-mono tabular-nums">
         {verified}/{total}
       </span>
-      {allOk
-        ? "적용/조건부 항목 모두 조문 인용 검증됨 (RAG corpus 매칭)"
-        : "일부 항목이 조문 인용 검증을 통과하지 못함 — 미검증 항목은 법무 재확인 필수"}
+      <span>{allOk ? "검증 완료" : "일부 미검증"}</span>
     </div>
   );
 }
@@ -307,7 +315,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs uppercase tracking-wider text-slate-500 mb-1">
+      <span className="block text-[11px] uppercase tracking-wider text-slate-400 mb-1.5">
         {label}
       </span>
       {children}
@@ -316,110 +324,112 @@ function Field({
 }
 
 const inputCls =
-  "w-full rounded-md bg-white border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
+  "w-full rounded-2xl bg-[var(--surface-2)] border-0 px-4 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 transition";
 
 function ResultPanel({ result }: { result: DiagnosisResult }) {
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50/60 via-white to-fuchsia-50/40 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">진단 결과</h2>
+    <div className="space-y-3">
+      <div className="rounded-3xl bg-white p-7">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[11px] uppercase tracking-wider text-slate-400">
+            전체 위험
+          </span>
           <span
-            className={`text-xs px-2.5 py-1 rounded-full font-medium ${RISK_BADGE[result.overallRisk]}`}
+            className={`text-[12px] px-3 py-1 rounded-full font-medium ${RISK_PILL[result.overallRisk]}`}
           >
-            전체 위험: {result.overallRisk.toUpperCase()}
+            {result.overallRisk.toUpperCase()}
           </span>
         </div>
-        <p className="text-sm text-slate-700 leading-relaxed mb-3">{result.summary}</p>
+        <p className="text-[14px] text-slate-800 leading-relaxed mb-4">
+          {result.summary}
+        </p>
         <VerificationStats items={result.items} />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="font-semibold mb-3 flex items-center gap-2">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
-          최우선 조치 (Top 3)
+      <div className="rounded-3xl bg-white p-7">
+        <h3 className="text-[11px] uppercase tracking-wider text-slate-400 mb-3">
+          최우선 조치
         </h3>
-        <ol className="list-decimal list-inside space-y-1 text-sm text-slate-800">
+        <ol className="space-y-2.5">
           {result.recommendedNextSteps.map((s, i) => (
-            <li key={i}>{s}</li>
+            <li key={i} className="flex gap-3 text-[14px] text-slate-800">
+              <span className="shrink-0 grid place-items-center h-5 w-5 rounded-full bg-slate-900 text-white text-[11px] font-medium tabular-nums">
+                {i + 1}
+              </span>
+              <span>{s}</span>
+            </li>
           ))}
         </ol>
       </div>
 
-      <div className="space-y-3">
-        <h3 className="font-semibold">조항별 상세</h3>
+      <div className="space-y-2">
+        <h3 className="text-[11px] uppercase tracking-wider text-slate-400 px-1">
+          조항별
+        </h3>
         {result.items.map((item) => (
-          <article
-            key={item.obligationId}
-            className="rounded-xl border border-slate-200 bg-white p-5"
-          >
-            <header className="flex items-start justify-between gap-3 mb-2">
+          <article key={item.obligationId} className="rounded-3xl bg-white p-6">
+            <header className="flex items-start justify-between gap-3 mb-3">
               <div className="min-w-0">
-                <div className="text-xs text-slate-400">{item.legalBasis}</div>
-                <div className="font-semibold">{item.title}</div>
-                <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                  {item.obligationId}
+                <div className="text-[15px] font-semibold text-slate-900">
+                  {item.title}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  {item.legalBasis}
                 </div>
               </div>
-              <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+              <div className="flex gap-1.5 shrink-0 flex-wrap justify-end">
                 <VerifiedBadge verified={item.verified} />
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded ${APP_BADGE[item.applicability]}`}
-                >
-                  {item.applicability}
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${APP_PILL[item.applicability]}`}>
+                  {APP_LABEL[item.applicability]}
                 </span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded ${RISK_BADGE[item.riskLevel]}`}
-                >
-                  {item.riskLevel}
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${RISK_PILL[item.riskLevel]}`}>
+                  {item.riskLevel.toUpperCase()}
                 </span>
               </div>
             </header>
-            <p className="text-sm text-slate-700 leading-relaxed mb-3">
+            <p className="text-[13.5px] text-slate-700 leading-relaxed mb-3">
               {item.reasoning}
             </p>
 
-            <details className="mb-3" open={item.applicability !== "not_applicable"}>
-              <summary className="cursor-pointer text-xs text-indigo-600 hover:text-indigo-700 mb-1">
-                근거 조문 인용 ({item.citations.length})
+            <details className="mb-3" open={item.applicability === "applicable"}>
+              <summary className="cursor-pointer text-[12px] text-slate-500 hover:text-slate-900 transition list-none flex items-center gap-1">
+                <Icon name="chevron-right" size={12} />
+                근거 조문 ({item.citations.length})
               </summary>
-              <div className="mt-2">
-                <CitationsBlock citations={item.citations} obligationId={item.obligationId} />
+              <div className="mt-3">
+                <CitationsBlock
+                  citations={item.citations}
+                  obligationId={item.obligationId}
+                />
                 {obligationSourceUrl(item.obligationId) && (
                   <a
                     href={obligationSourceUrl(item.obligationId)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block mt-2 text-[10px] text-slate-400 hover:text-indigo-600 underline underline-offset-2"
+                    className="inline-flex items-center gap-1 mt-2 text-[11px] text-slate-400 hover:text-slate-900 transition"
                   >
-                    원문: 국가법령정보센터 →
+                    국가법령정보센터
+                    <Icon name="arrow-up-right" size={11} />
                   </a>
                 )}
               </div>
             </details>
 
             {item.actionItems.length > 0 && (
-              <div className="mb-2">
-                <div className="text-xs text-slate-500 mb-1">이행 체크리스트</div>
-                <ul className="space-y-1">
-                  {item.actionItems.map((a, i) => (
-                    <li key={i} className="text-sm text-slate-800 flex gap-2">
-                      <input type="checkbox" className="mt-1" />
-                      <span>{a}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <ul className="space-y-1.5">
+                {item.actionItems.map((a, i) => (
+                  <li key={i} className="text-[13px] text-slate-800 flex gap-2.5">
+                    <Icon name="check" size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                    <span>{a}</span>
+                  </li>
+                ))}
+              </ul>
             )}
-            <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200">
-              <div>
-                <span className="text-slate-400">마감:</span> {item.deadline}
-              </div>
+
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
+              <span>{item.deadline}</span>
               {item.evidenceTypes.length > 0 && (
-                <div>
-                  <span className="text-slate-400">증거:</span>{" "}
-                  {item.evidenceTypes.join(", ")}
-                </div>
+                <span className="truncate">{item.evidenceTypes.join(" · ")}</span>
               )}
             </div>
           </article>

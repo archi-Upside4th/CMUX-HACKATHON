@@ -1,3 +1,5 @@
+import { Icon } from "./Icon";
+
 interface Citation {
   text: string;
   verifiedLocator: string | null;
@@ -11,8 +13,8 @@ interface Props {
 export function CitationsBlock({ citations }: Props) {
   if (citations.length === 0) {
     return (
-      <div className="rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-700">
-        ⚠ 인용된 조문이 없습니다 — AI 응답 신뢰도 낮음. 법무 검토 권장.
+      <div className="rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+        인용 없음 — 법무 검토 필요
       </div>
     );
   }
@@ -23,35 +25,25 @@ export function CitationsBlock({ citations }: Props) {
         return (
           <div
             key={i}
-            className={`rounded border p-2 text-[11px] leading-snug ${
-              verified
-                ? "border-emerald-200 bg-emerald-50"
-                : "border-rose-200 bg-rose-50"
+            className={`rounded-xl px-3 py-2.5 text-[12px] leading-snug ${
+              verified ? "bg-emerald-50" : "bg-rose-50"
             }`}
           >
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Icon
+                name={verified ? "check" : "x"}
+                size={12}
+                className={verified ? "text-emerald-600" : "text-rose-600"}
+              />
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                  verified
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-rose-100 text-rose-700"
+                className={`font-mono text-[10px] ${
+                  verified ? "text-emerald-700" : "text-rose-700"
                 }`}
               >
-                {verified ? `✓ ${c.verifiedLocator}` : "✗ 검증실패"}
+                {verified ? c.verifiedLocator : "검증 실패"}
               </span>
-              {!verified && (
-                <span className="text-[10px] text-rose-700">
-                  corpus 미일치 — 환각 가능성. 표시만 하고 신뢰하지 마세요.
-                </span>
-              )}
             </div>
-            <div
-              className={`border-l-2 pl-2 ${
-                verified ? "border-emerald-400" : "border-rose-400"
-              } text-slate-800`}
-            >
-              "{c.text}"
-            </div>
+            <div className="text-slate-800">&ldquo;{c.text}&rdquo;</div>
           </div>
         );
       })}
@@ -62,18 +54,15 @@ export function CitationsBlock({ citations }: Props) {
 export function VerifiedBadge({ verified }: { verified: boolean }) {
   return (
     <span
-      className={`text-[10px] px-1.5 py-0.5 rounded ${
+      className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full ${
         verified
-          ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-          : "bg-rose-100 text-rose-700 border border-rose-200"
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-rose-100 text-rose-700"
       }`}
-      title={
-        verified
-          ? "인용된 조문이 RAG corpus와 일치 — 검증됨"
-          : "인용 검증 실패 — 법무 재검토 필요"
-      }
+      title={verified ? "조문 검증됨" : "검증 실패"}
     >
-      {verified ? "✓ 조문 검증됨" : "✗ 미검증"}
+      <Icon name={verified ? "check" : "x"} size={10} />
+      {verified ? "검증" : "미검증"}
     </span>
   );
 }

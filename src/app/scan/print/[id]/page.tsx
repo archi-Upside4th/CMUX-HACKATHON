@@ -199,14 +199,12 @@ function PrintableReport({
       `}</style>
 
       <div className="no-print sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-slate-200 px-6 py-3 flex items-center justify-between">
-        <div className="text-sm text-slate-600">
-          공식 보고서 미리보기 — 인쇄/PDF 저장 다이얼로그에서 "배경 그래픽"을 켜세요.
-        </div>
+        <span className="text-[12px] text-slate-400">미리보기</span>
         <button
           onClick={() => window.print()}
-          className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition shadow-sm"
+          className="rounded-full bg-slate-900 hover:bg-black px-4 py-2 text-[13px] font-medium text-white transition"
         >
-          공식 인쇄 / PDF 저장
+          인쇄 / PDF
         </button>
       </div>
 
