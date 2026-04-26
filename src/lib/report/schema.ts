@@ -39,10 +39,13 @@ export const SystemCallSiteSchema = z.object({
   dataInputHints: z.array(z.string()),
 });
 
+export type SystemCallSite = z.infer<typeof SystemCallSiteSchema>;
+
 export const SystemCallContextSchema = z.object({
   systemId: z.string(),
   callSites: z.array(SystemCallSiteSchema),
 });
+export type SystemCallContext = z.infer<typeof SystemCallContextSchema>;
 
 export const RepoContextSchema = z.object({
   serviceName: z.string().optional(),
@@ -129,6 +132,12 @@ export const SystemAnalysisSchema = z.object({
 });
 export type SystemAnalysis = z.infer<typeof SystemAnalysisSchema>;
 
+export const ReportCitationSchema = z.object({
+  text: z.string(),
+  verifiedLocator: z.string().nullable(),
+});
+export type ReportCitation = z.infer<typeof ReportCitationSchema>;
+
 export const ObligationDeepDiveSchema = z.object({
   obligationId: ObligationIdSchema,
   title: z.string(),
@@ -139,6 +148,8 @@ export const ObligationDeepDiveSchema = z.object({
   immediateActions: z.array(z.string()),
   longTermActions: z.array(z.string()),
   blockers: z.array(z.string()),
+  citations: z.array(ReportCitationSchema).default([]),
+  verified: z.boolean().default(false),
 });
 export type ObligationDeepDive = z.infer<typeof ObligationDeepDiveSchema>;
 

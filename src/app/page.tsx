@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import type { AIUsage, DiagnosisResult, CompanyProfile } from "@/lib/types";
 import { saveEntry } from "@/lib/storage/history";
+import { CitationsBlock, VerifiedBadge } from "@/components/CitationsBlock";
+import { obligationSourceUrl } from "@/lib/laws/labels";
 
 const AI_OPTIONS: { value: AIUsage; label: string }[] = [
   { value: "chatbot", label: "챗봇/대화형" },
@@ -274,6 +276,29 @@ export default function Home() {
   );
 }
 
+function VerificationStats({ items }: { items: DiagnosisResult["items"] }) {
+  const applicable = items.filter((i) => i.applicability !== "not_applicable");
+  const verified = applicable.filter((i) => i.verified).length;
+  const total = applicable.length;
+  const allOk = total > 0 && verified === total;
+  return (
+    <div
+      className={`text-xs rounded border px-3 py-2 ${
+        allOk
+          ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-200"
+          : "border-amber-500/40 bg-amber-500/5 text-amber-200"
+      }`}
+    >
+      <span className="font-mono mr-2">
+        {verified}/{total}
+      </span>
+      {allOk
+        ? "적용/조건부 항목 모두 조문 인용 검증됨 (RAG corpus 매칭)"
+        : "일부 항목이 조문 인용 검증을 통과하지 못함 — 미검증 항목은 법무 재확인 필수"}
+    </div>
+  );
+}
+
 function Field({
   label,
   children,
@@ -306,7 +331,8 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
             전체 위험: {result.overallRisk.toUpperCase()}
           </span>
         </div>
-        <p className="text-sm text-zinc-300 leading-relaxed">{result.summary}</p>
+        <p className="text-sm text-zinc-300 leading-relaxed mb-3">{result.summary}</p>
+        <VerificationStats items={result.items} />
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
@@ -326,11 +352,15 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
             className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5"
           >
             <header className="flex items-start justify-between gap-3 mb-2">
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs text-zinc-500">{item.legalBasis}</div>
                 <div className="font-semibold">{item.title}</div>
+                <div className="text-[10px] text-zinc-600 font-mono mt-0.5">
+                  {item.obligationId}
+                </div>
               </div>
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+                <VerifiedBadge verified={item.verified} />
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded ${APP_BADGE[item.applicability]}`}
                 >
@@ -346,6 +376,26 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
             <p className="text-sm text-zinc-300 leading-relaxed mb-3">
               {item.reasoning}
             </p>
+
+            <details className="mb-3" open={item.applicability !== "not_applicable"}>
+              <summary className="cursor-pointer text-xs text-indigo-300 hover:text-indigo-200 mb-1">
+                근거 조문 인용 ({item.citations.length})
+              </summary>
+              <div className="mt-2">
+                <CitationsBlock citations={item.citations} obligationId={item.obligationId} />
+                {obligationSourceUrl(item.obligationId) && (
+                  <a
+                    href={obligationSourceUrl(item.obligationId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block mt-2 text-[10px] text-zinc-500 hover:text-indigo-300 underline underline-offset-2"
+                  >
+                    원문: 국가법령정보센터 →
+                  </a>
+                )}
+              </div>
+            </details>
+
             {item.actionItems.length > 0 && (
               <div className="mb-2">
                 <div className="text-xs text-zinc-400 mb-1">이행 체크리스트</div>

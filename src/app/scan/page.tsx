@@ -11,6 +11,9 @@ import type {
   ObligationDeepDive,
   ActionItem,
 } from "@/lib/report/schema";
+import { ObligationChip } from "@/components/ObligationChip";
+import { CitationsBlock, VerifiedBadge } from "@/components/CitationsBlock";
+import { obligationSourceUrl } from "@/lib/laws/labels";
 
 interface AISystem {
   id: string;
@@ -329,9 +332,12 @@ function ComplianceReportView({
 
       {/* Obligation Deep Dive */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
-          의무 심화 분석 ({report.obligationDeepDive.length}개 / 9개)
-        </h2>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 className="text-sm uppercase tracking-wider text-zinc-400">
+            의무 심화 분석 ({report.obligationDeepDive.length}개 / 9개)
+          </h2>
+          <ObligationVerificationStats items={report.obligationDeepDive} />
+        </div>
         <div className="space-y-2">
           {report.obligationDeepDive.map((o) => (
             <ObligationRow key={o.obligationId} item={o} systemNameById={systemNameById} />
@@ -370,6 +376,29 @@ function ComplianceReportView({
         </div>
       )}
     </section>
+  );
+}
+
+function ObligationVerificationStats({
+  items,
+}: {
+  items: ObligationDeepDive[];
+}) {
+  const applicable = items.filter((i) => i.applicability !== "not_applicable");
+  const verified = applicable.filter((i) => i.verified).length;
+  const total = applicable.length;
+  const allOk = total > 0 && verified === total;
+  return (
+    <span
+      className={`text-[11px] px-2 py-1 rounded border ${
+        allOk
+          ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-200"
+          : "border-amber-500/40 bg-amber-500/5 text-amber-200"
+      }`}
+    >
+      RAG 검증 {verified}/{total}{" "}
+      {allOk ? "· 모두 통과" : "· 일부 미검증 (법무 재확인 필요)"}
+    </span>
   );
 }
 
@@ -481,7 +510,10 @@ function ObligationRow({
   systemNameById: Map<string, string>;
 }) {
   return (
-    <details className="rounded-lg border border-zinc-700 bg-zinc-900/40 p-3">
+    <details
+      className="rounded-lg border border-zinc-700 bg-zinc-900/40 p-3"
+      open={item.applicability === "applicable"}
+    >
       <summary className="cursor-pointer flex items-start gap-3 text-sm">
         <span
           className={`text-[10px] px-2 py-0.5 rounded shrink-0 ${APPLICABILITY_BADGE[item.applicability]}`}
@@ -492,9 +524,23 @@ function ObligationRow({
           <div className="font-medium text-zinc-100">{item.title}</div>
           <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{item.obligationId}</div>
         </div>
+        <VerifiedBadge verified={item.verified} />
       </summary>
       <div className="mt-3 space-y-2 text-xs text-zinc-300">
         <Block title="판단 근거">{item.rationale}</Block>
+        <Block title={`근거 조문 인용 (${item.citations.length})`}>
+          <CitationsBlock citations={item.citations} obligationId={item.obligationId} />
+          {obligationSourceUrl(item.obligationId) && (
+            <a
+              href={obligationSourceUrl(item.obligationId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-2 text-[10px] text-zinc-500 hover:text-indigo-300 underline underline-offset-2"
+            >
+              원문: 국가법령정보센터 →
+            </a>
+          )}
+        </Block>
         {item.triggeringSystems.length > 0 && (
           <Block title="트리거 시스템">
             {item.triggeringSystems.map((id) => systemNameById.get(id) ?? id).join(", ")}
@@ -624,12 +670,7 @@ function BareSystemsView({ result }: { result: ScanResponse }) {
                 {s.triggeredObligations.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     {s.triggeredObligations.map((o) => (
-                      <span
-                        key={o}
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-200"
-                      >
-                        {o}
-                      </span>
+                      <ObligationChip key={o} obligationId={o} compact />
                     ))}
                   </div>
                 )}

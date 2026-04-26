@@ -30,9 +30,19 @@ export type CompanyProfile = z.infer<typeof CompanyProfileSchema>;
 export const RiskLevel = z.enum(["high", "medium", "low", "none"]);
 export type RiskLevel = z.infer<typeof RiskLevel>;
 
+// AI 응답이 인용한 조문 텍스트 — 검증 후 verifiedLocator가 채워짐
+export const CitationSchema = z.object({
+  text: z.string().describe("AI 기본법 조문에서 발췌한 인용 (corpus 내 부분 문자열)"),
+  verifiedLocator: z
+    .string()
+    .nullable()
+    .describe("검증 후 매칭된 조문 위치. null이면 검증 실패"),
+});
+export type Citation = z.infer<typeof CitationSchema>;
+
 // Gemini가 반환할 진단 결과 스키마
 export const DiagnosisItemSchema = z.object({
-  obligationId: z.string().describe("적용 조항 식별자 (예: AIBA-Art-31)"),
+  obligationId: z.string().describe("적용 조항 식별자 (예: AIBA-NOTICE)"),
   title: z.string().describe("의무 제목"),
   legalBasis: z.string().describe("근거 조항 (예: AI기본법 제31조)"),
   applicability: z.enum(["applicable", "conditional", "not_applicable"]),
@@ -41,6 +51,14 @@ export const DiagnosisItemSchema = z.object({
   actionItems: z.array(z.string()).describe("이행해야 할 구체 조치 목록"),
   deadline: z.string().describe("이행 마감 (예: '2026-01-22 시행 전')"),
   evidenceTypes: z.array(z.string()).describe("감사 시 제출할 증거 유형"),
+  citations: z
+    .array(CitationSchema)
+    .default([])
+    .describe("이 항목 판단을 뒷받침하는 조문 인용 (corpus 발췌)"),
+  verified: z
+    .boolean()
+    .default(false)
+    .describe("서버 검증 통과 여부 (인용이 corpus에 실재)"),
 });
 export type DiagnosisItem = z.infer<typeof DiagnosisItemSchema>;
 

@@ -14,7 +14,11 @@ import {
   type ServiceProfile,
 } from "@/lib/report/schema";
 import type { AISystem } from "@/lib/scan/synthesizer/schema";
-import { obligationsAsContext } from "@/lib/laws/ai-basic-act";
+import {
+  KNOWN_OBLIGATION_IDS,
+  obligationsAsContext,
+  verifyCitation,
+} from "@/lib/laws/ai-basic-act";
 
 const ownerEnum = ["engineering", "legal", "product", "security", "executive"];
 
@@ -109,7 +113,7 @@ const responseSchema = {
       items: {
         type: Type.OBJECT,
         properties: {
-          obligationId: { type: Type.STRING },
+          obligationId: { type: Type.STRING, enum: KNOWN_OBLIGATION_IDS },
           title: { type: Type.STRING },
           applicability: {
             type: Type.STRING,
@@ -124,6 +128,15 @@ const responseSchema = {
           immediateActions: { type: Type.ARRAY, items: { type: Type.STRING } },
           longTermActions: { type: Type.ARRAY, items: { type: Type.STRING } },
           blockers: { type: Type.ARRAY, items: { type: Type.STRING } },
+          citations: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: { text: { type: Type.STRING } },
+              required: ["text"],
+              propertyOrdering: ["text"],
+            },
+          },
         },
         required: [
           "obligationId",
@@ -135,6 +148,7 @@ const responseSchema = {
           "immediateActions",
           "longTermActions",
           "blockers",
+          "citations",
         ],
         propertyOrdering: [
           "obligationId",
@@ -146,6 +160,7 @@ const responseSchema = {
           "immediateActions",
           "longTermActions",
           "blockers",
+          "citations",
         ],
       },
     },
@@ -208,6 +223,8 @@ const SYSTEM_INSTRUCTION = `당신은 한국 AI기본법(2026.1.22 시행) 컴�
 4) systemAnalyses: 입력으로 받은 시스템 ID 모두 분석. 다른 시스템과의 상호작용도 명시.
    - auditableArtifacts: 감사 시 제출할 구체 산출물 이름 (예: "AI 사용 고지 정책 v1.0", "생성물 워터마크 적용 표준 §3").
 5) obligationDeepDive: 9개 의무 모두 평가. applicability + 근거 + 필요 증거 + 즉시조치(30일) + 장기조치(90일) + 막힌 의사결정.
+   - citations: 9개 의무 컨텍스트의 "근거 발췌"에서 인용구를 그대로 복사해 1건 이상 첨부.
+   - 인용은 30자 이상의 의미 있는 문장. 발췌 풀에 없는 문장 창작 금지 (자동 검증으로 차단).
 6) roadmap:
    - p1_urgent (30일): 위반 위험 즉시 회피용
    - p2_important (90일): 시행일(2026-01-22) 전 완료
@@ -306,5 +323,20 @@ JSON 스키마에 맞춰 ComplianceReport 출력.
       `ComplianceReport 스키마 검증 실패: ${parsed.error.message}`
     );
   }
-  return parsed.data;
+
+  const verifiedDeepDive = parsed.data.obligationDeepDive.map((o) => {
+    const checked = (o.citations ?? []).map((c) => {
+      const r = verifyCitation(o.obligationId, c.text);
+      return { text: c.text, verifiedLocator: r.ok ? r.locator : null };
+    });
+    const hasVerified = checked.some((c) => c.verifiedLocator !== null);
+    return {
+      ...o,
+      citations: checked,
+      verified:
+        o.applicability === "not_applicable" ? hasVerified : hasVerified,
+    };
+  });
+
+  return { ...parsed.data, obligationDeepDive: verifiedDeepDive };
 }
