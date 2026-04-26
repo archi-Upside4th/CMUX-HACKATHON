@@ -1,0 +1,35 @@
+id: py.spacy
+name: spacy
+nameKo: spaCy (NLP 파이프라인)
+category: classical_ml
+patterns:
+  ecosystem: python
+  manifestNames: [spacy]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+spacy\b'
+    - '^\s*from\s+spacy\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bspacy\.load\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bspacy\.blank\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bnlp\s*=\s*spacy\.'
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: Explosion AI spaCy
+  knownModels: [en_core_web_sm, en_core_web_lg, ko_core_news_sm, xx_ent_wiki_sm]
+  isForeignModel: false
+  modalities: [text]
+  isGenerative: false
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-RISK-MGMT]
+  conditionalObligations: []
+confidence: medium
+descriptionKo: spaCy — NER/품사태깅/구문분석 NLP 파이프라인. 자체 호스팅 OSS 모델.
+references: [https://github.com/explosion/spaCy]
+addedAt: "2026-04-26"

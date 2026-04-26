@@ -1,0 +1,46 @@
+id: py.xgboost
+name: xgboost
+nameKo: XGBoost (Gradient Boosting)
+category: classical_ml
+patterns:
+  ecosystem: python
+  manifestNames: [xgboost]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+xgboost\b'
+    - '^\s*from\s+xgboost\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bxgb\.XGBClassifier\s*\('
+      captureModel: false
+    - regex: '\bxgb\.XGBRegressor\s*\('
+      captureModel: false
+    - regex: '\bxgb\.train\s*\('
+      captureModel: false
+    - regex: '\bXGBClassifier\s*\('
+      captureModel: false
+    - regex: '\bXGBRegressor\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: XGBoost
+  knownModels: []
+  isForeignModel: false
+  modalities: [tabular]
+  isGenerative: false
+  domainHints: [credit_finance, employment, general]
+  autonomyHint: fully_automated
+  trainsOrFineTunes: true
+  autoTriggeredObligations: [AIBA-RISK-MGMT, AIBA-DATA-GOVERNANCE]
+  conditionalObligations:
+    - obligationId: AIBA-HIGH-IMPACT
+      requiresPattern: pattern.sensitive_domain_keywords.credit
+    - obligationId: AIBA-HIGH-IMPACT
+      requiresPattern: pattern.sensitive_domain_keywords.hr
+    - obligationId: AIBA-IMPACT-ASSESSMENT
+      requiresPattern: pattern.threshold_decision
+confidence: medium
+descriptionKo: XGBoost — 신용평가/HR/마케팅 의사결정에 가장 흔한 전통 ML. 도메인 키워드 결합 시 고영향 트리거.
+references: [https://github.com/dmlc/xgboost]
+addedAt: "2026-04-26"

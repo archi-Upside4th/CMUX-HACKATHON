@@ -1,0 +1,37 @@
+id: py.vertexai
+name: Google Vertex AI (Python)
+nameKo: Google Vertex AI (Python)
+category: cloud_ml
+patterns:
+  ecosystem: python
+  manifestNames: [google-cloud-aiplatform, vertexai]
+  manifestFiles: [requirements.txt, pyproject.toml]
+  importPatterns:
+    - '^\s*import\s+vertexai\b'
+    - '^\s*from\s+vertexai\b'
+    - '^\s*from\s+google\.cloud\s+import\s+aiplatform'
+  envVars: [GOOGLE_APPLICATION_CREDENTIALS, GOOGLE_CLOUD_PROJECT]
+  callPatterns:
+    - regex: 'GenerativeModel\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: 'TextGenerationModel\.from_pretrained\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: 'aiplatform\.CustomTrainingJob'
+      captureModel: false
+  apiHosts: [aiplatform.googleapis.com]
+inferences:
+  procurement: vendor_saas
+  modelProvider: Google Vertex AI
+  knownModels: [gemini-2.5-pro, gemini-2.5-flash, gemini-1.5-pro, text-bison]
+  isForeignModel: true
+  modalities: [text, image, multimodal, embedding]
+  isGenerative: true
+  domainHints: [general]
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations:
+    - obligationId: AIBA-DATA-GOVERNANCE
+      requiresPattern: pattern.large_training_loop
+confidence: high
+descriptionKo: Vertex AI — Google Cloud. CustomTrainingJob 발견 시 학습 의도.
+references: [https://cloud.google.com/vertex-ai/docs]
+addedAt: "2026-04-26"

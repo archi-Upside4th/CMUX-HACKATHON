@@ -1,0 +1,32 @@
+id: ts.cohere-ai
+name: cohere-ai
+nameKo: Cohere TS SDK
+category: llm_api
+patterns:
+  ecosystem: typescript
+  manifestNames: [cohere-ai]
+  manifestFiles: [package.json]
+  importPatterns:
+    - '^\s*import\s+.*from\s+["'']cohere-ai["'']'
+  envVars: [COHERE_API_KEY]
+  callPatterns:
+    - regex: '\.chat\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.embed\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.rerank\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [api.cohere.ai, api.cohere.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: Cohere
+  knownModels: [command-r-plus, command-r, embed-multilingual-v3.0, rerank-multilingual-v3.0]
+  isForeignModel: true
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+confidence: high
+descriptionKo: Cohere — 해외 LLM. 국내 대리인 + 고지 + 위험관리 자동.
+references: [https://docs.cohere.com]
+addedAt: "2026-04-26"

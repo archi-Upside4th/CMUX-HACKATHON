@@ -1,0 +1,42 @@
+id: py.mediapipe
+name: mediapipe
+nameKo: Google MediaPipe (멀티모달 ML)
+category: vision_model
+patterns:
+  ecosystem: python
+  manifestNames: [mediapipe]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+mediapipe\b'
+    - '^\s*from\s+mediapipe\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bmp\.solutions\.face_detection\.FaceDetection\s*\('
+      captureModel: false
+    - regex: '\bmp\.solutions\.face_mesh\.FaceMesh\s*\('
+      captureModel: false
+    - regex: '\bmp\.solutions\.hands\.Hands\s*\('
+      captureModel: false
+    - regex: '\bmp\.solutions\.pose\.Pose\s*\('
+      captureModel: false
+    - regex: '\bmp\.solutions\.holistic\.Holistic\s*\('
+      captureModel: false
+    - regex: '\bvision\.FaceLandmarker\.create_from_options\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: Google MediaPipe
+  knownModels: []
+  isForeignModel: false
+  modalities: [image, video, multimodal]
+  isGenerative: false
+  domainHints: [biometric_id, healthcare, general]
+  autonomyHint: fully_automated
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-RISK-MGMT, AIBA-HIGH-IMPACT, AIBA-IMPACT-ASSESSMENT]
+  conditionalObligations: []
+confidence: medium
+descriptionKo: Google MediaPipe — 얼굴/손/포즈 검출. 생체식별 도메인 직접 신호 → 고영향 후보.
+references: [https://github.com/google-ai-edge/mediapipe]
+addedAt: "2026-04-26"

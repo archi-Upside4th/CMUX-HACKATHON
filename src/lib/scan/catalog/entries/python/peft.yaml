@@ -1,0 +1,37 @@
+id: py.peft
+name: peft
+nameKo: HuggingFace PEFT (LoRA Fine-tuning)
+category: model_hub
+patterns:
+  ecosystem: python
+  manifestNames: [peft]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+peft\b'
+    - '^\s*from\s+peft\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bget_peft_model\s*\('
+      captureModel: false
+    - regex: '\bLoraConfig\s*\('
+      captureModel: false
+    - regex: '\bPeftModel\.from_pretrained\s*\(\s*[^,]+,\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bprepare_model_for_kbit_training\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: HuggingFace PEFT
+  knownModels: []
+  isForeignModel: false
+  modalities: [text]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: true
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-DATA-GOVERNANCE]
+  conditionalObligations: []
+confidence: high
+descriptionKo: PEFT (Parameter-Efficient Fine-Tuning) — LoRA/QLoRA 등. 강한 자체학습 신호 → 데이터 거버넌스 의무.
+references: [https://github.com/huggingface/peft]
+addedAt: "2026-04-26"

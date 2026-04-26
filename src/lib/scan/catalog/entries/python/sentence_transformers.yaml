@@ -1,0 +1,35 @@
+id: py.sentence_transformers
+name: sentence-transformers
+nameKo: Sentence-Transformers (임베딩)
+category: model_hub
+patterns:
+  ecosystem: python
+  manifestNames: [sentence-transformers]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+sentence_transformers\b'
+    - '^\s*from\s+sentence_transformers\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bSentenceTransformer\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bCrossEncoder\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.encode\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: HuggingFace (Sentence-Transformers)
+  knownModels: [all-MiniLM-L6-v2, BAAI/bge-large-en-v1.5, jhgan/ko-sroberta-multitask, intfloat/multilingual-e5-large]
+  isForeignModel: false
+  modalities: [embedding, text]
+  isGenerative: false
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-RISK-MGMT]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Sentence-Transformers — 자체 호스팅 임베딩 모델. RAG 핵심. 모델 자체 가중치는 OSS.
+references: [https://github.com/UKPLab/sentence-transformers]
+addedAt: "2026-04-26"

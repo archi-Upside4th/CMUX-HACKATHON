@@ -1,0 +1,41 @@
+id: py.together
+name: together
+nameKo: Together AI Python SDK
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [together]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+together\b'
+    - '^\s*from\s+together\b'
+  envVars: [TOGETHER_API_KEY]
+  callPatterns:
+    - regex: '\bTogether\s*\(\s*\)'
+      captureModel: false
+    - regex: '\.chat\.completions\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.completions\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.images\.generate\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.embeddings\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [api.together.xyz, api.together.ai]
+inferences:
+  procurement: third_party_api
+  modelProvider: Together AI (multi-model hosting)
+  knownModels: [meta-llama/Llama-3.3-70B-Instruct-Turbo, deepseek-ai/DeepSeek-V3, Qwen/QwQ-32B-Preview, black-forest-labs/FLUX.1-schnell-Free]
+  isForeignModel: true
+  modalities: [text, image, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations:
+    - obligationId: AIBA-WATERMARK
+      requiresPattern: pattern.image_generation_call
+confidence: high
+descriptionKo: Together AI — OSS 모델 호스팅 플랫폼 (Llama/DeepSeek/FLUX 등). 해외 인프라.
+references: [https://github.com/togethercomputer/together-python]
+addedAt: "2026-04-26"

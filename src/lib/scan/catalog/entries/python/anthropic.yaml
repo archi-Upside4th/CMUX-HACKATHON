@@ -1,0 +1,36 @@
+id: py.anthropic
+name: anthropic
+nameKo: Anthropic Python SDK
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [anthropic]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+anthropic\b'
+    - '^\s*from\s+anthropic\b'
+  envVars: [ANTHROPIC_API_KEY]
+  callPatterns:
+    - regex: '\.messages\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.completions\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [api.anthropic.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: Anthropic
+  knownModels:
+    - claude-opus-4-6
+    - claude-sonnet-4-6
+    - claude-haiku-4-5-20251001
+    - claude-3-5-sonnet-20241022
+  isForeignModel: true
+  modalities: [text, image]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+confidence: high
+descriptionKo: Anthropic Python SDK — 해외 LLM. 국내 대리인 + 고지 + 위험관리 자동.
+references: [https://github.com/anthropics/anthropic-sdk-python]
+addedAt: "2026-04-26"

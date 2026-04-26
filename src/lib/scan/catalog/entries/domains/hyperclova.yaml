@@ -1,0 +1,35 @@
+id: kr.hyperclova
+name: NAVER HyperCLOVA X
+nameKo: 네이버 하이퍼클로바 X (CLOVA Studio)
+category: korean_llm
+patterns:
+  ecosystem: any
+  manifestNames: []
+  manifestFiles: []
+  importPatterns: []
+  envVars: [CLOVASTUDIO_API_KEY, CLOVA_STUDIO_API_KEY, NCP_CLOVASTUDIO_API_KEY, NCP_APIGW_API_KEY]
+  callPatterns:
+    - regex: '["''`]https://clovastudio\.(stream|apigw|apigw\.gov-)ntruss\.com/[^"''`]+'
+      captureModel: false
+    - regex: '/testapp/v[12]/chat-completions/HCX-[0-9A-Za-z-]+'
+      captureModel: false
+    - regex: '\bHCX-(005|003|DASH-001|SEED-Vision-Instruct-3B|\d+)\b'
+      captureModel: true
+  apiHosts: [clovastudio.stream.ntruss.com, clovastudio.apigw.ntruss.com, clovastudio.apigw.gov-ntruss.com]
+inferences:
+  procurement: korean_llm
+  modelProvider: NAVER
+  knownModels: [HCX-005, HCX-003, HCX-DASH-001, HCX-SEED-Vision-Instruct-3B]
+  isForeignModel: false
+  modalities: [text, image, multimodal, embedding]
+  isGenerative: true
+  domainHints: [general, customer_support]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+  conditionalObligations:
+    - obligationId: AIBA-WATERMARK
+      requiresPattern: pattern.image_generation_call
+confidence: high
+descriptionKo: 네이버 HyperCLOVA X (CLOVA Studio) — HCX-005 등 국내 LLM. FOREIGN-REP 자동 면제. 멀티모달 지원.
+references: [https://www.ncloud.com/product/aiService/clovaStudio]
+addedAt: "2026-04-26"

@@ -1,0 +1,51 @@
+id: py.langchain
+name: LangChain (Python)
+nameKo: LangChain (Python)
+category: agent_framework
+patterns:
+  ecosystem: python
+  manifestNames:
+    - langchain
+    - langchain-core
+    - langchain-community
+    - langchain-openai
+    - langchain-anthropic
+    - langchain-google-genai
+    - langgraph
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*from\s+langchain'
+    - '^\s*import\s+langchain'
+    - '^\s*from\s+langgraph'
+  envVars: [LANGCHAIN_API_KEY, LANGCHAIN_TRACING_V2]
+  callPatterns:
+    - regex: 'ChatOpenAI\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: 'ChatAnthropic\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: 'ChatGoogleGenerativeAI\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bAgentExecutor\b'
+      captureModel: false
+    - regex: '\bcreate_react_agent\b'
+      captureModel: false
+inferences:
+  procurement: third_party_api
+  modelProvider: "(varies — chat model class)"
+  modalities: [text, embedding]
+  isGenerative: true
+  autonomyHint: human_on_the_loop
+  domainHints: [general, customer_support]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+  conditionalObligations:
+    - obligationId: AIBA-FOREIGN-REP
+      requiresPattern: pattern.langchain_foreign_provider
+    - obligationId: AIBA-HIGH-IMPACT
+      requiresPattern: pattern.agent_with_tool_calling_in_sensitive_domain
+confidence: medium
+descriptionKo: |
+  LangChain 자체는 모델 비포함 — Chat* 클래스로 provider 결정.
+  Agent + tool calling 패턴 시 자동결정 위험 ↑ → HIGH-IMPACT 후보.
+references: [https://python.langchain.com]
+addedAt: "2026-04-26"

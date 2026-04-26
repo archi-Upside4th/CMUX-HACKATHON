@@ -1,0 +1,35 @@
+id: py.vllm
+name: vllm
+nameKo: vLLM (LLM 서빙 엔진)
+category: local_runtime
+patterns:
+  ecosystem: python
+  manifestNames: [vllm]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+vllm\b'
+    - '^\s*from\s+vllm\b'
+  envVars: [VLLM_HOST, VLLM_API_KEY]
+  callPatterns:
+    - regex: '\bLLM\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bAsyncLLMEngine\.from_engine_args\s*\('
+      captureModel: false
+    - regex: '\bSamplingParams\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: vLLM (self-hosted serving)
+  knownModels: []
+  isForeignModel: false
+  modalities: [text]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+  conditionalObligations: []
+confidence: high
+descriptionKo: vLLM — 자체 호스팅 LLM 추론 서빙 엔진. 모델 가중치는 분리 관리, 컴퓨팅 사용량 큼 (HIGH-COMPUTE 후보).
+references: [https://github.com/vllm-project/vllm]
+addedAt: "2026-04-26"

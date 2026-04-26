@@ -1,0 +1,32 @@
+id: ts.huggingface-inference
+name: "@huggingface/inference"
+nameKo: HuggingFace Inference (TS)
+category: model_hub
+patterns:
+  ecosystem: typescript
+  manifestNames: ["@huggingface/inference"]
+  manifestFiles: [package.json]
+  importPatterns:
+    - '^\s*import\s+.*from\s+["'']@huggingface/inference["'']'
+  envVars: [HF_TOKEN, HUGGINGFACE_API_KEY]
+  callPatterns:
+    - regex: '\.(textGeneration|chatCompletion|imageToText|textToImage|featureExtraction)\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+      captureGroup: 2
+  apiHosts: [api-inference.huggingface.co, huggingface.co]
+inferences:
+  procurement: third_party_api
+  modelProvider: HuggingFace Inference
+  modalities: [text, image, embedding, audio]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  isForeignModel: true
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations:
+    - obligationId: AIBA-WATERMARK
+      requiresPattern: pattern.image_generation_call
+confidence: high
+descriptionKo: HuggingFace 추론 API — 해외 호스팅. 모델은 호출별 가변.
+references: [https://huggingface.co/docs/inference-providers]
+addedAt: "2026-04-26"

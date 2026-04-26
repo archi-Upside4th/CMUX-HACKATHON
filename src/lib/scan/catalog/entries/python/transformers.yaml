@@ -1,0 +1,39 @@
+id: py.transformers
+name: HuggingFace Transformers
+nameKo: HF Transformers (Python)
+category: model_hub
+patterns:
+  ecosystem: python
+  manifestNames: [transformers]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+transformers\b'
+    - '^\s*from\s+transformers\b'
+  envVars: [HF_HOME, HF_TOKEN, TRANSFORMERS_CACHE]
+  callPatterns:
+    - regex: '(AutoModel\w*|AutoTokenizer|AutoProcessor)\.from_pretrained\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+      captureGroup: 2
+    - regex: '\bpipeline\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: false
+    - regex: '\b(Trainer|SFTTrainer|DPOTrainer)\s*\('
+      captureModel: false
+inferences:
+  procurement: open_source
+  modelProvider: HuggingFace (model varies)
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: true
+  autoTriggeredObligations: [AIBA-RISK-MGMT, AIBA-DATA-GOVERNANCE]
+  conditionalObligations:
+    - obligationId: AIBA-FOREIGN-REP
+      requiresPattern: pattern.foreign_origin_model_id
+    - obligationId: AIBA-HIGH-COMPUTE
+      requiresPattern: pattern.large_training_loop
+confidence: medium
+descriptionKo: |
+  HF Transformers — 모델 자체는 가변. Trainer/SFTTrainer 호출 시 학습 의도 확정.
+  로딩 모델이 한국 모델(upstage/, LGAI-EXAONE/) 이면 isForeignModel=false (Synthesizer 보정).
+references: [https://huggingface.co/docs/transformers]
+addedAt: "2026-04-26"

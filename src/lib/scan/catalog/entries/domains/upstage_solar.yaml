@@ -1,0 +1,38 @@
+id: py.upstage_solar
+name: upstage
+nameKo: Upstage Solar Pro
+category: korean_llm
+patterns:
+  ecosystem: any
+  manifestNames: [upstage]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile, package.json]
+  importPatterns:
+    - '^\s*from\s+upstage\b'
+    - '^\s*import\s+upstage\b'
+    - 'from\s+["'']@upstage/[^"'']+["'']'
+  envVars: [UPSTAGE_API_KEY, SOLAR_API_KEY]
+  callPatterns:
+    - regex: 'api\.upstage\.ai'
+      captureModel: false
+    - regex: '"model"\s*:\s*"(solar-[a-z0-9-]+)"'
+      captureModel: true
+    - regex: 'model\s*=\s*["'']?(solar-[a-z0-9-]+)["'']?'
+      captureModel: true
+    - regex: '\bChatUpstage\s*\('
+      captureModel: false
+  apiHosts: [api.upstage.ai]
+inferences:
+  procurement: korean_llm
+  modelProvider: Upstage
+  knownModels: [solar-pro, solar-mini, solar-1-mini-chat, solar-pro-translate, embedding-query, embedding-passage]
+  isForeignModel: false
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Upstage Solar — 한국 LLM 공급사 (Solar Pro 등). OpenAI 호환 API. 국내 모델이라 FOREIGN-REP 미적용.
+references: [https://www.upstage.ai/products/solar]
+addedAt: "2026-04-26"

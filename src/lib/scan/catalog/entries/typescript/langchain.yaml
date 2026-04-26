@@ -1,0 +1,47 @@
+id: ts.langchain
+name: langchain
+nameKo: LangChain (TypeScript)
+category: agent_framework
+patterns:
+  ecosystem: typescript
+  manifestNames:
+    - langchain
+    - "@langchain/core"
+    - "@langchain/openai"
+    - "@langchain/anthropic"
+    - "@langchain/google-genai"
+    - "@langchain/community"
+    - "@langchain/langgraph"
+    - "@langchain/textsplitters"
+  manifestFiles: [package.json]
+  importPatterns:
+    - 'from\s+["'']langchain(/[^"'']*)?["'']'
+    - 'from\s+["'']@langchain/[^"'']+["'']'
+  envVars: [LANGCHAIN_API_KEY, LANGCHAIN_TRACING_V2, LANGSMITH_API_KEY]
+  callPatterns:
+    - regex: '\bnew\s+ChatOpenAI\s*\(\s*\{[^}]*modelName?\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bnew\s+ChatAnthropic\s*\(\s*\{[^}]*modelName?\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bnew\s+ChatGoogleGenerativeAI\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.invoke\s*\('
+      captureModel: false
+    - regex: '\bcreateRetrievalChain\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: third_party_api
+  modelProvider: LangChain (multi-provider)
+  knownModels: []
+  isForeignModel: true
+  modalities: [text]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: LangChain TypeScript — RAG/agent 프레임워크. ChatOpenAI/ChatAnthropic 등 래핑.
+references: [https://js.langchain.com]
+addedAt: "2026-04-26"

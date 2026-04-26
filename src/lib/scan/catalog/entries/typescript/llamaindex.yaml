@@ -1,0 +1,37 @@
+id: ts.llamaindex
+name: llamaindex
+nameKo: LlamaIndex (TypeScript)
+category: agent_framework
+patterns:
+  ecosystem: typescript
+  manifestNames: [llamaindex, "@llamaindex/core", "@llamaindex/openai", "@llamaindex/anthropic"]
+  manifestFiles: [package.json]
+  importPatterns:
+    - 'from\s+["'']llamaindex["'']'
+    - 'from\s+["'']@llamaindex/[^"'']+["'']'
+  envVars: [LLAMA_CLOUD_API_KEY]
+  callPatterns:
+    - regex: '\bnew\s+OpenAI\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bnew\s+Anthropic\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bVectorStoreIndex\.fromDocuments\s*\('
+      captureModel: false
+    - regex: '\.asQueryEngine\s*\(\s*\)'
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: third_party_api
+  modelProvider: LlamaIndex (multi-provider)
+  knownModels: []
+  isForeignModel: true
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: LlamaIndex TS — RAG 프레임워크. VectorStoreIndex + queryEngine 패턴.
+references: [https://ts.llamaindex.ai]
+addedAt: "2026-04-26"

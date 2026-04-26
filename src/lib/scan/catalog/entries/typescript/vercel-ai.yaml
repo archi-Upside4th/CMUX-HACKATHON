@@ -1,0 +1,51 @@
+id: ts.vercel_ai
+name: ai
+nameKo: Vercel AI SDK
+category: agent_framework
+patterns:
+  ecosystem: typescript
+  manifestNames:
+    - ai
+    - "@ai-sdk/openai"
+    - "@ai-sdk/anthropic"
+    - "@ai-sdk/google"
+    - "@ai-sdk/mistral"
+    - "@ai-sdk/cohere"
+    - "@ai-sdk/groq"
+    - "@ai-sdk/amazon-bedrock"
+    - "@ai-sdk/azure"
+  manifestFiles: [package.json]
+  importPatterns:
+    - 'from\s+["'']ai["'']'
+    - 'from\s+["'']ai/(react|rsc|vue|svelte)["'']'
+    - 'from\s+["'']@ai-sdk/[^"'']+["'']'
+  envVars: []
+  callPatterns:
+    - regex: '\bgenerateText\s*\(\s*\{[^}]*model\s*:[^,}]*\(["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bstreamText\s*\(\s*\{[^}]*model\s*:[^,}]*\(["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bgenerateObject\s*\(\s*\{[^}]*model\s*:[^,}]*\(["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bstreamObject\s*\(\s*\{[^}]*model\s*:[^,}]*\(["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\buseChat\s*\(\s*\{'
+      captureModel: false
+    - regex: '\buseCompletion\s*\(\s*\{'
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: third_party_api
+  modelProvider: Vercel AI SDK (multi-provider)
+  knownModels: []
+  isForeignModel: true
+  modalities: [text]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Vercel AI SDK — Next.js 등 React 앱에서 멀티 프로바이더 LLM 호출. useChat/streamText 패턴.
+references: [https://sdk.vercel.ai]
+addedAt: "2026-04-26"

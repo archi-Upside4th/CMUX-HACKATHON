@@ -1,0 +1,34 @@
+id: py.face_recognition
+name: face_recognition (dlib)
+nameKo: face_recognition (생체인식)
+category: biometric
+patterns:
+  ecosystem: python
+  manifestNames: [face_recognition, face-recognition, dlib]
+  manifestFiles: [requirements.txt, pyproject.toml]
+  importPatterns:
+    - '^\s*import\s+face_recognition\b'
+    - '^\s*from\s+face_recognition\b'
+    - 'dlib\.face_recognition_model_v1'
+  envVars: []
+  callPatterns:
+    - regex: 'face_recognition\.(face_encodings|compare_faces|face_locations|face_landmarks)'
+      captureModel: false
+inferences:
+  procurement: open_source
+  modelProvider: dlib
+  modalities: [image]
+  isGenerative: false
+  autonomyHint: fully_automated
+  domainHints: [biometric_id]
+  trainsOrFineTunes: false
+  autoTriggeredObligations:
+    - AIBA-NOTICE
+    - AIBA-HIGH-IMPACT
+    - AIBA-RISK-MGMT
+    - AIBA-IMPACT-ASSESSMENT
+confidence: high
+descriptionKo: |
+  얼굴 인식 = 생체식별. 고영향 AI 자동 + 영향평가 의무 자동.
+references: [https://github.com/ageitgey/face_recognition]
+addedAt: "2026-04-26"

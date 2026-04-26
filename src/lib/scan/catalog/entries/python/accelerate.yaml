@@ -1,0 +1,35 @@
+id: py.accelerate
+name: accelerate
+nameKo: HuggingFace Accelerate (분산 학습)
+category: local_runtime
+patterns:
+  ecosystem: python
+  manifestNames: [accelerate]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+accelerate\b'
+    - '^\s*from\s+accelerate\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bAccelerator\s*\('
+      captureModel: false
+    - regex: '\.prepare\s*\([^)]*model'
+      captureModel: false
+    - regex: '\.backward\s*\(\s*loss'
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: HuggingFace Accelerate
+  knownModels: []
+  isForeignModel: false
+  modalities: [text]
+  isGenerative: false
+  domainHints: [general]
+  trainsOrFineTunes: true
+  autoTriggeredObligations: [AIBA-RISK-MGMT, AIBA-DATA-GOVERNANCE]
+  conditionalObligations: []
+confidence: medium
+descriptionKo: Accelerate — 멀티 GPU/TPU 분산 학습 추상화. transformers와 함께 쓰이며 학습 신호 보강.
+references: [https://github.com/huggingface/accelerate]
+addedAt: "2026-04-26"

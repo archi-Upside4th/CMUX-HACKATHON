@@ -1,0 +1,42 @@
+id: py.diffusers
+name: HuggingFace Diffusers
+nameKo: HuggingFace Diffusers (이미지 생성)
+category: vision_model
+patterns:
+  ecosystem: python
+  manifestNames: [diffusers]
+  manifestFiles: [requirements.txt, pyproject.toml]
+  importPatterns:
+    - '^\s*from\s+diffusers\b'
+    - '^\s*import\s+diffusers\b'
+  envVars: []
+  callPatterns:
+    - regex: '(StableDiffusion|FluxPipeline|DiffusionPipeline)\w*\.from_pretrained\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+      captureGroup: 2
+    - regex: '\bpipe\s*\([^)]*\)'
+      captureModel: false
+inferences:
+  procurement: open_source
+  modelProvider: "(varies — Stability/Black Forest 등)"
+  knownModels:
+    - runwayml/stable-diffusion-v1-5
+    - stabilityai/stable-diffusion-xl-base-1.0
+    - black-forest-labs/FLUX.1-dev
+  modalities: [image]
+  isGenerative: true
+  domainHints: [marketing_creative]
+  trainsOrFineTunes: false
+  autoTriggeredObligations:
+    - AIBA-NOTICE
+    - AIBA-WATERMARK
+    - AIBA-RISK-MGMT
+  conditionalObligations:
+    - obligationId: AIBA-DATA-GOVERNANCE
+      requiresPattern: pattern.fine_tuning_loop
+confidence: high
+descriptionKo: |
+  Diffusers = 이미지 생성 — 워터마크 의무 자동.
+  StableDiffusion 모델 ID 캡처해 modelName 후보로.
+references: [https://huggingface.co/docs/diffusers]
+addedAt: "2026-04-26"

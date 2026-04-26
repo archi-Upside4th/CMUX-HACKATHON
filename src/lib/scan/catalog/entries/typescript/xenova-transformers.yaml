@@ -1,0 +1,30 @@
+id: ts.xenova-transformers
+name: "@xenova/transformers"
+nameKo: Transformers.js (브라우저/엣지)
+category: model_hub
+patterns:
+  ecosystem: typescript
+  manifestNames: ["@xenova/transformers", "@huggingface/transformers"]
+  manifestFiles: [package.json]
+  importPatterns:
+    - '^\s*import\s+.*from\s+["'']@xenova/transformers["'']'
+    - '^\s*import\s+.*from\s+["'']@huggingface/transformers["'']'
+  envVars: []
+  callPatterns:
+    - regex: 'pipeline\s*\(\s*["'']([^"'']+)["'']\s*,\s*["'']([^"'']+)["'']'
+      captureModel: true
+      captureGroup: 2
+inferences:
+  procurement: open_source
+  modelProvider: HuggingFace (in-browser)
+  modalities: [text, embedding, image]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+confidence: medium
+descriptionKo: |
+  브라우저/엣지에서 HF 모델 실행 — 외부 API 호출 없음. 국내 대리인 의무 X (자체 호스팅).
+  단 모델 가중치가 해외 origin이면 권리 검토 필요(별도 영역).
+references: [https://huggingface.co/docs/transformers.js]
+addedAt: "2026-04-26"

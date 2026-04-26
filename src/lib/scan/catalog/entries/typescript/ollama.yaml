@@ -1,0 +1,35 @@
+id: ts.ollama
+name: ollama
+nameKo: Ollama Node Client
+category: local_runtime
+patterns:
+  ecosystem: typescript
+  manifestNames: [ollama, "ollama-ai-provider"]
+  manifestFiles: [package.json]
+  importPatterns:
+    - 'from\s+["'']ollama["'']'
+    - 'from\s+["'']ollama-ai-provider["'']'
+  envVars: [OLLAMA_HOST, OLLAMA_BASE_URL]
+  callPatterns:
+    - regex: '\bollama\.chat\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bollama\.generate\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bollama\.embeddings\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: Ollama (self-hosted)
+  knownModels: [llama3, llama3.1, mistral, gemma, qwen, deepseek-r1]
+  isForeignModel: false
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Ollama Node — 자체 호스팅 LLM 런타임. 외국 모델이지만 자체 호스팅이라 FOREIGN-REP 미적용 (모델별 검토 필요).
+references: [https://github.com/ollama/ollama-js]
+addedAt: "2026-04-26"

@@ -1,0 +1,29 @@
+id: py.replicate
+name: Replicate Python client
+nameKo: Replicate (모델 호스팅)
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [replicate]
+  manifestFiles: [requirements.txt, pyproject.toml]
+  importPatterns: ['^\s*import\s+replicate\b']
+  envVars: [REPLICATE_API_TOKEN]
+  callPatterns:
+    - regex: 'replicate\.run\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [api.replicate.com, replicate.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: Replicate
+  modalities: [text, image, video, audio]
+  isGenerative: true
+  isForeignModel: true
+  domainHints: [marketing_creative, general]
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations:
+    - obligationId: AIBA-WATERMARK
+      requiresPattern: pattern.image_generation_call
+confidence: high
+descriptionKo: Replicate — 해외 모델 호스팅. 호출 모델 식별자 캡처.
+references: [https://replicate.com/docs]
+addedAt: "2026-04-26"

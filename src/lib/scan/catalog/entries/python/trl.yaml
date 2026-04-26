@@ -1,0 +1,39 @@
+id: py.trl
+name: trl
+nameKo: HuggingFace TRL (RLHF/DPO/SFT)
+category: model_hub
+patterns:
+  ecosystem: python
+  manifestNames: [trl]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+trl\b'
+    - '^\s*from\s+trl\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bSFTTrainer\s*\('
+      captureModel: false
+    - regex: '\bDPOTrainer\s*\('
+      captureModel: false
+    - regex: '\bPPOTrainer\s*\('
+      captureModel: false
+    - regex: '\bRewardTrainer\s*\('
+      captureModel: false
+    - regex: '\bGRPOTrainer\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: HuggingFace TRL
+  knownModels: []
+  isForeignModel: false
+  modalities: [text]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: true
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-DATA-GOVERNANCE]
+  conditionalObligations: []
+confidence: high
+descriptionKo: TRL (Transformer Reinforcement Learning) — SFT/DPO/PPO/RLHF. 모델 정렬 학습. 데이터 거버넌스 + 위험관리 강화.
+references: [https://github.com/huggingface/trl]
+addedAt: "2026-04-26"

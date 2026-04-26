@@ -1,0 +1,37 @@
+id: py.mistralai
+name: mistralai
+nameKo: Mistral AI Python SDK
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [mistralai]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+mistralai\b'
+    - '^\s*from\s+mistralai\b'
+  envVars: [MISTRAL_API_KEY]
+  callPatterns:
+    - regex: '\bMistral\s*\(\s*[^)]*api_key'
+      captureModel: false
+    - regex: '\.chat\.complete\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.chat\.stream\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.embeddings\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [api.mistral.ai]
+inferences:
+  procurement: third_party_api
+  modelProvider: Mistral AI
+  knownModels: [mistral-large-latest, mistral-small-latest, codestral-latest, ministral-8b-latest]
+  isForeignModel: true
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Mistral AI Python SDK — 프랑스 LLM 공급사. 해외 모델.
+references: [https://github.com/mistralai/client-python]
+addedAt: "2026-04-26"

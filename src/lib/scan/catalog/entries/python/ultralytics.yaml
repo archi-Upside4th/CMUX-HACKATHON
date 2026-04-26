@@ -1,0 +1,44 @@
+id: py.ultralytics
+name: ultralytics
+nameKo: Ultralytics YOLO (객체 검출)
+category: vision_model
+patterns:
+  ecosystem: python
+  manifestNames: [ultralytics]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+ultralytics\b'
+    - '^\s*from\s+ultralytics\b'
+  envVars: []
+  callPatterns:
+    - regex: '\bYOLO\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bRTDETR\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bSAM\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.predict\s*\('
+      captureModel: false
+    - regex: '\.track\s*\('
+      captureModel: false
+    - regex: '\.train\s*\(\s*data\s*='
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: Ultralytics
+  knownModels: [yolov8n, yolov8s, yolov8m, yolov8l, yolov8x, yolo11n, yolo11s]
+  isForeignModel: false
+  modalities: [image, video]
+  isGenerative: false
+  domainHints: [biometric_id, law_enforcement, general]
+  autonomyHint: fully_automated
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-RISK-MGMT, AIBA-HIGH-IMPACT, AIBA-IMPACT-ASSESSMENT]
+  conditionalObligations:
+    - obligationId: AIBA-DATA-GOVERNANCE
+      requiresPattern: pattern.dataset_load
+confidence: medium
+descriptionKo: Ultralytics YOLO — 실시간 객체 검출/추적/세그멘테이션. CCTV/생체식별/법집행 도메인에서 자주 쓰임 → 고영향 후보.
+references: [https://github.com/ultralytics/ultralytics]
+addedAt: "2026-04-26"

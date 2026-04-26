@@ -1,0 +1,40 @@
+id: ts.aws-bedrock
+name: "@aws-sdk/client-bedrock-runtime"
+nameKo: AWS Bedrock Runtime (TS)
+category: cloud_ml
+patterns:
+  ecosystem: typescript
+  manifestNames:
+    - "@aws-sdk/client-bedrock-runtime"
+    - "@aws-sdk/client-bedrock"
+    - "@aws-sdk/client-bedrock-agent-runtime"
+  manifestFiles: [package.json]
+  importPatterns:
+    - '^\s*import\s+.*from\s+["'']@aws-sdk/client-bedrock'
+  envVars: [AWS_ACCESS_KEY_ID, AWS_REGION, AWS_BEDROCK_REGION]
+  callPatterns:
+    - regex: 'InvokeModelCommand\s*\(\s*\{[^}]*modelId\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: 'ConverseCommand\s*\(\s*\{[^}]*modelId\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: ["bedrock-runtime.amazonaws.com"]
+inferences:
+  procurement: vendor_saas
+  modelProvider: AWS Bedrock (model varies)
+  knownModels:
+    - anthropic.claude-3-5-sonnet-20241022-v2:0
+    - anthropic.claude-3-haiku-20240307-v1:0
+    - meta.llama3-1-70b-instruct-v1:0
+    - amazon.titan-text-express-v1
+    - mistral.mixtral-8x7b-instruct-v0:1
+  isForeignModel: true
+  modalities: [text, image, embedding, multimodal]
+  isGenerative: true
+  domainHints: [general]
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+confidence: high
+descriptionKo: |
+  AWS Bedrock — 호스팅 LLM. modelId가 anthropic.* / meta.* / mistral.* 등 → 실제 사업자 추론.
+  Synthesizer가 modelId prefix로 modelProvider 보정.
+references: [https://docs.aws.amazon.com/bedrock/]
+addedAt: "2026-04-26"

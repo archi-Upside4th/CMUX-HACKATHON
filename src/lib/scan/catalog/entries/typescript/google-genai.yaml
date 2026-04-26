@@ -1,0 +1,39 @@
+id: ts.google-genai
+name: "@google/genai"
+nameKo: Google GenAI TS SDK
+category: llm_api
+patterns:
+  ecosystem: typescript
+  manifestNames: ["@google/genai", "@google/generative-ai"]
+  manifestFiles: [package.json]
+  importPatterns:
+    - '^\s*import\s+.*from\s+["'']@google/genai["'']'
+    - '^\s*import\s+.*from\s+["'']@google/generative-ai["'']'
+  envVars: [GOOGLE_API_KEY, GEMINI_API_KEY, GOOGLE_GENAI_API_KEY]
+  callPatterns:
+    - regex: 'generateContent\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: 'getGenerativeModel\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [generativelanguage.googleapis.com, aiplatform.googleapis.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: Google
+  knownModels:
+    - gemini-2.5-pro
+    - gemini-2.5-flash
+    - gemini-2.0-flash
+    - gemini-1.5-pro
+  isForeignModel: true
+  modalities: [text, image, audio, video, multimodal]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations:
+    - obligationId: AIBA-WATERMARK
+      requiresPattern: pattern.text_generation_user_facing
+confidence: high
+descriptionKo: Google Gemini TS SDK. 해외 LLM — 국내 대리인 + 고지 + 위험관리 자동.
+references: [https://ai.google.dev/gemini-api/docs]
+addedAt: "2026-04-26"

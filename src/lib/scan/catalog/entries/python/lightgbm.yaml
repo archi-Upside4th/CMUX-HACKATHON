@@ -1,0 +1,46 @@
+id: py.lightgbm
+name: lightgbm
+nameKo: LightGBM (Gradient Boosting)
+category: classical_ml
+patterns:
+  ecosystem: python
+  manifestNames: [lightgbm]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+lightgbm\b'
+    - '^\s*from\s+lightgbm\b'
+  envVars: []
+  callPatterns:
+    - regex: '\blgb\.LGBMClassifier\s*\('
+      captureModel: false
+    - regex: '\blgb\.LGBMRegressor\s*\('
+      captureModel: false
+    - regex: '\blgb\.train\s*\('
+      captureModel: false
+    - regex: '\bLGBMClassifier\s*\('
+      captureModel: false
+    - regex: '\bLGBMRegressor\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: open_source
+  modelProvider: LightGBM
+  knownModels: []
+  isForeignModel: false
+  modalities: [tabular]
+  isGenerative: false
+  domainHints: [credit_finance, employment, general]
+  autonomyHint: fully_automated
+  trainsOrFineTunes: true
+  autoTriggeredObligations: [AIBA-RISK-MGMT, AIBA-DATA-GOVERNANCE]
+  conditionalObligations:
+    - obligationId: AIBA-HIGH-IMPACT
+      requiresPattern: pattern.sensitive_domain_keywords.credit
+    - obligationId: AIBA-HIGH-IMPACT
+      requiresPattern: pattern.sensitive_domain_keywords.hr
+    - obligationId: AIBA-IMPACT-ASSESSMENT
+      requiresPattern: pattern.threshold_decision
+confidence: medium
+descriptionKo: LightGBM — XGBoost 대안. 신용/HR/광고 모델링에 흔함. 도메인 키워드 결합 시 고영향 트리거.
+references: [https://github.com/microsoft/LightGBM]
+addedAt: "2026-04-26"

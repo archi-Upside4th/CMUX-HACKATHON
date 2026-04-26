@@ -1,0 +1,35 @@
+id: py.groq
+name: groq
+nameKo: Groq Python SDK
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [groq]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+groq\b'
+    - '^\s*from\s+groq\b'
+  envVars: [GROQ_API_KEY]
+  callPatterns:
+    - regex: '\bGroq\s*\(\s*\)'
+      captureModel: false
+    - regex: '\.chat\.completions\.create\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.audio\.transcriptions\.create\s*\('
+      captureModel: false
+  apiHosts: [api.groq.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: Groq (LPU inference for OSS models)
+  knownModels: [llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768, whisper-large-v3]
+  isForeignModel: true
+  modalities: [text, audio]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Groq — LPU 기반 초고속 추론 서비스 (Llama/Mixtral/Whisper 호스팅). 해외 인프라.
+references: [https://github.com/groq/groq-python]
+addedAt: "2026-04-26"

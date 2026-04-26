@@ -1,0 +1,43 @@
+id: py.sklearn
+name: scikit-learn
+nameKo: scikit-learn (전통 ML)
+category: classical_ml
+patterns:
+  ecosystem: python
+  manifestNames: [scikit-learn, sklearn]
+  manifestFiles: [requirements.txt, pyproject.toml]
+  importPatterns:
+    - '^\s*from\s+sklearn'
+    - '^\s*import\s+sklearn'
+  envVars: []
+  callPatterns:
+    - regex: '\.fit\s*\('
+      captureModel: false
+    - regex: '\.predict(_proba|_log_proba)?\s*\('
+      captureModel: false
+    - regex: '(LogisticRegression|RandomForest\w+|GradientBoosting\w+|SVC|XGBClassifier|MLPClassifier)\s*\('
+      captureModel: false
+inferences:
+  procurement: self_developed
+  modelProvider: in-house (sklearn)
+  modalities: [tabular]
+  isGenerative: false
+  autonomyHint: fully_automated
+  domainHints: [general, credit_finance, employment, healthcare]
+  trainsOrFineTunes: true
+  autoTriggeredObligations:
+    - AIBA-RISK-MGMT
+    - AIBA-DATA-GOVERNANCE
+  conditionalObligations:
+    - obligationId: AIBA-HIGH-IMPACT
+      requiresPattern: pattern.sensitive_domain_keywords.credit
+    - obligationId: AIBA-IMPACT-ASSESSMENT
+      requiresPattern: pattern.sensitive_domain_keywords.credit
+    - obligationId: AIBA-NOTICE
+      requiresPattern: pattern.text_generation_user_facing
+confidence: medium
+descriptionKo: |
+  sklearn = 자체 학습 ML. 도메인 키워드(credit/loan/hire) 결합 시 고영향 AI.
+  fit() 존재 시 학습 의도 확정 → 데이터 거버넌스 의무 자동.
+references: [https://scikit-learn.org]
+addedAt: "2026-04-26"

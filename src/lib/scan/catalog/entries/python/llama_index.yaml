@@ -1,0 +1,48 @@
+id: py.llama_index
+name: llama-index
+nameKo: LlamaIndex (Python)
+category: agent_framework
+patterns:
+  ecosystem: python
+  manifestNames:
+    - llama-index
+    - llama-index-core
+    - llama-index-llms-openai
+    - llama-index-llms-anthropic
+    - llama-index-embeddings-openai
+    - llama-index-vector-stores-chroma
+    - llama-index-vector-stores-pinecone
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+llama_index\b'
+    - '^\s*from\s+llama_index(\.|\s)'
+  envVars: [LLAMA_CLOUD_API_KEY]
+  callPatterns:
+    - regex: '\bVectorStoreIndex\.from_documents\s*\('
+      captureModel: false
+    - regex: '\bSimpleDirectoryReader\s*\('
+      captureModel: false
+    - regex: '\bOpenAI\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bAnthropic\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.as_query_engine\s*\('
+      captureModel: false
+    - regex: '\.as_chat_engine\s*\('
+      captureModel: false
+  apiHosts: []
+inferences:
+  procurement: third_party_api
+  modelProvider: LlamaIndex (multi-provider RAG)
+  knownModels: []
+  isForeignModel: true
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: LlamaIndex Python — RAG 프레임워크. VectorStoreIndex/QueryEngine. 임베딩 + 검색 + LLM.
+references: [https://github.com/run-llama/llama_index]
+addedAt: "2026-04-26"

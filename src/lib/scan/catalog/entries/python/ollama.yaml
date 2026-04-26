@@ -1,0 +1,32 @@
+id: py.ollama
+name: Ollama Python client
+nameKo: Ollama (로컬 LLM 런타임)
+category: local_runtime
+patterns:
+  ecosystem: python
+  manifestNames: [ollama]
+  manifestFiles: [requirements.txt, pyproject.toml]
+  importPatterns:
+    - '^\s*import\s+ollama\b'
+    - '^\s*from\s+ollama\b'
+  envVars: [OLLAMA_HOST]
+  callPatterns:
+    - regex: 'ollama\.(chat|generate|embeddings)\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+      captureGroup: 2
+  apiHosts: [localhost, "127.0.0.1"]
+inferences:
+  procurement: open_source
+  modelProvider: Ollama (local)
+  knownModels: [llama3.1, llama3.2, qwen2.5, mistral, gemma2, exaone3.5, solar]
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT]
+confidence: medium
+descriptionKo: |
+  로컬 Ollama 런타임 — 외부 API 호출 없음 → 국내 대리인 의무 X.
+  로딩 모델명이 한국 모델(exaone, solar) 이면 isForeignModel=false 보정.
+references: [https://github.com/ollama/ollama]
+addedAt: "2026-04-26"

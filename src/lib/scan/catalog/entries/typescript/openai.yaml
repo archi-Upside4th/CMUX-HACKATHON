@@ -1,0 +1,53 @@
+id: ts.openai
+name: openai
+nameKo: OpenAI Node SDK
+category: llm_api
+patterns:
+  ecosystem: typescript
+  manifestNames: [openai]
+  manifestFiles: [package.json]
+  importPatterns:
+    - 'from\s+["'']openai["'']'
+    - 'require\s*\(\s*["'']openai["'']\s*\)'
+  envVars: [OPENAI_API_KEY, OPENAI_ORG_ID, OPENAI_BASE_URL]
+  callPatterns:
+    - regex: '\.chat\.completions\.create\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.responses\.create\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.images\.generate\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.embeddings\.create\s*\(\s*\{[^}]*model\s*:\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.audio\.(transcriptions|speech|translations)\.create\s*\('
+      captureModel: false
+    - regex: '\.fineTuning\.jobs\.create\s*\('
+      captureModel: false
+  apiHosts: [api.openai.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: OpenAI
+  knownModels:
+    - gpt-4o
+    - gpt-4o-mini
+    - gpt-4-turbo
+    - o1
+    - o1-mini
+    - dall-e-3
+    - text-embedding-3-large
+    - whisper-1
+  isForeignModel: true
+  modalities: [text, image, audio, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations:
+    - obligationId: AIBA-WATERMARK
+      requiresPattern: pattern.image_generation_call
+    - obligationId: AIBA-DATA-GOVERNANCE
+      requiresPattern: pattern.fine_tuning_loop
+confidence: high
+descriptionKo: OpenAI Node.js SDK — 해외 LLM. 국내 대리인 + 고지 + 위험관리 자동.
+references: [https://github.com/openai/openai-node]
+addedAt: "2026-04-26"

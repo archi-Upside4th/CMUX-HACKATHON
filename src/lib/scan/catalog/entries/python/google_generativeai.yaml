@@ -1,0 +1,39 @@
+id: py.google_generativeai
+name: google-generativeai
+nameKo: Google Gemini Python SDK
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [google-generativeai, google-genai]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+google\.generativeai\b'
+    - '^\s*from\s+google\.generativeai\b'
+    - '^\s*from\s+google\s+import\s+genai\b'
+    - '^\s*import\s+google\.genai\b'
+  envVars: [GOOGLE_API_KEY, GEMINI_API_KEY, GOOGLE_GENAI_API_KEY]
+  callPatterns:
+    - regex: '\bgenai\.GenerativeModel\s*\(\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\bgenai\.Client\s*\('
+      captureModel: false
+    - regex: '\.generate_content\s*\('
+      captureModel: false
+    - regex: '\.embed_content\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [generativelanguage.googleapis.com]
+inferences:
+  procurement: third_party_api
+  modelProvider: Google
+  knownModels: [gemini-2.5-flash, gemini-2.5-pro, gemini-1.5-pro, gemini-1.5-flash, text-embedding-004]
+  isForeignModel: true
+  modalities: [text, image, video, audio, multimodal, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Google Gemini 직접 API (Vertex AI 미경유). 해외 모델.
+references: [https://github.com/googleapis/python-genai]
+addedAt: "2026-04-26"

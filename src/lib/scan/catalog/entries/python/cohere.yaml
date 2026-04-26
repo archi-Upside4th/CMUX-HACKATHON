@@ -1,0 +1,39 @@
+id: py.cohere
+name: cohere
+nameKo: Cohere Python SDK
+category: llm_api
+patterns:
+  ecosystem: python
+  manifestNames: [cohere]
+  manifestFiles: [requirements.txt, pyproject.toml, Pipfile]
+  importPatterns:
+    - '^\s*import\s+cohere\b'
+    - '^\s*from\s+cohere\b'
+  envVars: [COHERE_API_KEY, CO_API_KEY]
+  callPatterns:
+    - regex: '\bcohere\.Client\s*\('
+      captureModel: false
+    - regex: '\bcohere\.ClientV2\s*\('
+      captureModel: false
+    - regex: '\.chat\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.embed\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+    - regex: '\.rerank\s*\(\s*[^)]*model\s*=\s*["'']([^"'']+)["'']'
+      captureModel: true
+  apiHosts: [api.cohere.com, api.cohere.ai]
+inferences:
+  procurement: third_party_api
+  modelProvider: Cohere
+  knownModels: [command-r-plus, command-r, command, embed-english-v3.0, rerank-english-v3.0]
+  isForeignModel: true
+  modalities: [text, embedding]
+  isGenerative: true
+  domainHints: [general]
+  trainsOrFineTunes: false
+  autoTriggeredObligations: [AIBA-NOTICE, AIBA-RISK-MGMT, AIBA-FOREIGN-REP]
+  conditionalObligations: []
+confidence: high
+descriptionKo: Cohere Python SDK — 캐나다 LLM 공급사. command/embed/rerank.
+references: [https://github.com/cohere-ai/cohere-python]
+addedAt: "2026-04-26"
