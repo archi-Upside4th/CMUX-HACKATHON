@@ -114,7 +114,7 @@ export default function Home() {
           AI 기본법 30초 진단
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-          우리 회사가 위반할 수 있는 의무는 무엇인가?
+          회사 AI 진단
         </h1>
       </header>
 
