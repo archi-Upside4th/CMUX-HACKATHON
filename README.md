@@ -28,23 +28,34 @@ npm run dev
 # → http://localhost:3000
 ```
 
-### 2. 첫 사용 (둘 중 택1)
-- **회사 프로필 진단** — `http://localhost:3000/` — 폼에 회사 정보 입력
-- **코드 스캔** — `http://localhost:3000/scan` — GitHub URL 한 줄 입력
+### 2. 첫 사용
+`http://localhost:3000/dashboard`로 접속하면 두 진입점(스캔 / 진단) 카드 + 최근 이력이 한눈에 보입니다. 상단 네비에서 언제든 이동 가능.
+
+- **대시보드** — `/dashboard` — 최근 스캔/진단 이력 + 빠른 진입
+- **회사 프로필 진단** — `/` — 폼에 회사 정보 입력 (Gemini 기반)
+- **코드 스캔** — `/scan` — GitHub URL 한 줄 입력 (정적 분석 + Gemini 서술 보강)
 
 ---
 
-## 두 가지 진입점
+## 세 가지 진입점
 
-### A. `/` — 회사 프로필 진단 (Gemini 기반)
+### A. `/dashboard` — 대시보드
+- 최근 스캔/진단 이력 (브라우저 localStorage 저장 — 최신 50건)
+- KPI: 총 이력 / 스캔 수 / 진단 수 / HIGH 위험 건수
+- 카드 클릭 → 저장된 결과 그대로 재표시 (`/dashboard/{id}`)
+- 필터: 전체 / 스캔 / 진단
+
+> 저장은 브라우저 로컬에서만. 다른 기기/브라우저와 공유 안 됨. 추후 DB 백엔드 추가 예정.
+
+### B. `/` — 회사 프로필 진단 (Gemini 기반)
 회사가 어떤 AI를 어떻게 쓰는지 자연어로 입력하면 Gemini 2.5 Flash가 의무를 매핑합니다.
 
 - **입력**: 회사명, 산업, AI 사용 목적, 모델 종류, 데이터 종류 등 (폼 항목)
 - **출력**: 9개 의무별 적용 여부 + 근거 + 권장 액션
 - **API**: `POST /api/diagnose` — 본문 스키마는 `src/lib/types.ts`의 `CompanyProfileSchema` 참조
 
-### B. `/scan` — GitHub 저장소 코드 스캔 (정적 분석)
-저장소 URL만 주면 자동 스캔 → AI 시스템 식별 → 의무 매핑.
+### C. `/scan` — GitHub 저장소 코드 스캔 (정적 분석 + Gemini 서술)
+저장소 URL만 주면 자동 스캔 → AI 시스템 식별 → 의무 매핑 → Gemini가 비기술자용 서술 보강.
 
 #### 사용법
 1. `/scan` 페이지에서 GitHub URL 입력 (예: `https://github.com/openai/openai-quickstart-python`)
@@ -95,9 +106,26 @@ npm run dev
   ],
   "unattributedFindings": [
     { "ruleId": "pattern.threshold_decision", "filePath": "...", "lineStart": 42 }
-  ]
+  ],
+  "refinement": {
+    "overallSummary": "이 저장소는 OpenAI 외부 LLM에 의존하는 ...",
+    "topPriority": "synth-ab12cd34ef (OpenAI Python SDK) — 외부 생성형 AI ...",
+    "systems": [
+      {
+        "systemId": "synth-ab12cd34ef",
+        "humanSummary": "이 시스템은 사용자 질문에 자연어로 답하는 챗봇 ...",
+        "riskNarrative": "외부 OpenAI 모델을 사용하므로 ... 부정확/편향 답변 시 분쟁 가능.",
+        "mitigations": ["AI 사용 사실을 이용자에게 명확히 고지하십시오 ...", "..."],
+        "priorityScore": 2,
+        "gaps": ["워터마크 적용 여부 확인 필요", "..."]
+      }
+    ]
+  },
+  "refineError": null
 }
 ```
+
+> `refinement`는 `GEMINI_API_KEY`가 설정된 경우에만 채워집니다. 키가 없거나 호출 실패 시 `null`이며 결정적 결과(`systems`)는 그대로 반환됩니다.
 
 ---
 
@@ -191,18 +219,19 @@ npm run dev
 
 | 변수 | 필수 | 용도 |
 |---|---|---|
-| `GEMINI_API_KEY` | `/diagnose`만 | Google AI Studio API 키 |
+| `GEMINI_API_KEY` | `/diagnose` 필수, `/scan`에선 옵션 | Google AI Studio API 키 |
 
-`/scan` 자체는 외부 API 호출 없이 정적 분석만 수행하므로 키 없이도 동작합니다.
+`/scan`은 키가 없어도 결정적 분석 결과는 반환합니다 (Gemini 서술 보강만 생략, `refinement: null`).
 
 ---
 
 ## 알려진 제약
 
 - **Regex 기반 분석기** — AST 분석 미지원. import 별칭 / 동적 호출 일부 누락. (Phase 1.5.6 tree-sitter 통합 예정)
-- **Gemini refine 미적용** — 현재 합성기는 결정적 그루핑만. 모호한 케이스의 자연어 정제는 후속.
 - **`AIBA-HIGH-COMPUTE` 자동 트리거 미구현** — FLOPS/파라미터 수 추정 로직이 없어 카탈로그 명시 시에만 활성화.
 - **단일 커밋 스캔** — depth=1. 히스토리 기반 분석 (예: 시간에 따른 위험 변화) 불가.
+- **이력 저장은 브라우저 로컬** — `/dashboard`의 이력은 localStorage에만 보존. 다른 기기/브라우저로 이동 시 새로 시작. 50건 초과 시 오래된 항목 자동 폐기.
+- **Gemini refine은 상위 10개 시스템만** — 토큰 절약을 위해 11번째 이후 시스템은 결정적 결과만 노출.
 
 ---
 
@@ -213,12 +242,19 @@ src/
 ├── app/
 │   ├── api/
 │   │   ├── diagnose/route.ts    # POST 회사 프로필 진단
-│   │   └── scan/route.ts        # POST 코드 스캔
+│   │   └── scan/route.ts        # POST 코드 스캔 (synthesizer + Gemini refine)
 │   ├── page.tsx                 # / — 회사 프로필 폼
-│   └── scan/page.tsx            # /scan — 코드 스캔 UI
+│   ├── scan/page.tsx            # /scan — 코드 스캔 UI (refinement 카드)
+│   ├── dashboard/page.tsx       # /dashboard — 이력 카드 + KPI
+│   ├── dashboard/[id]/page.tsx  # /dashboard/{id} — 저장된 결과 재표시
+│   └── layout.tsx               # 상단 네비 (대시보드/스캔/진단)
 └── lib/
-    ├── gemini/                  # Gemini SDK 래퍼 + 진단 프롬프트
+    ├── gemini/
+    │   ├── client.ts            # GoogleGenAI 래퍼
+    │   ├── diagnose.ts          # /diagnose 프롬프트
+    │   └── refine-scan.ts       # /scan용 Gemini 서술 보강 (humanSummary/risk/mitigations/priority/gaps)
     ├── laws/ai-basic-act.ts     # 9개 의무 정의 (한국어)
+    ├── storage/history.ts       # localStorage 이력 저장 추상화
     ├── types.ts                 # CompanyProfile Zod 스키마
     └── scan/
         ├── catalog/             # 40개 YAML 엔트리 + loader

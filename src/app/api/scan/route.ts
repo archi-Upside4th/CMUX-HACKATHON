@@ -3,6 +3,7 @@ import { z } from "zod";
 import { collectRepo } from "@/lib/scan/collector/collector";
 import { analyzeRepo } from "@/lib/scan/analyzer/analyze";
 import { synthesizeSystems } from "@/lib/scan/synthesizer/synthesize";
+import { refineScan, type ScanRefinement } from "@/lib/gemini/refine-scan";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -40,6 +41,26 @@ export async function POST(req: NextRequest) {
   try {
     const report = await analyzeRepo(collected);
     const { systems, unattributedFindings } = await synthesizeSystems(report);
+
+    // Gemini refine — 키 없거나 실패해도 결정적 결과는 정상 반환
+    let refinement: ScanRefinement | null = null;
+    let refineError: string | null = null;
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        refinement = await refineScan({
+          repoUrl: collected.normalizedUrl,
+          systems,
+          unattributedRuleIds: unattributedFindings
+            .map((f) => f.ruleId)
+            .filter((r): r is string => Boolean(r)),
+          languageStats: report.fileTree.languageStats,
+        });
+      } catch (e) {
+        refineError = e instanceof Error ? e.message : String(e);
+        console.error("[scan refine]", refineError);
+      }
+    }
+
     return Response.json({
       ok: true,
       repoUrl: collected.normalizedUrl,
@@ -51,6 +72,8 @@ export async function POST(req: NextRequest) {
       },
       systems,
       unattributedFindings: unattributedFindings.slice(0, 50),
+      refinement,
+      refineError,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

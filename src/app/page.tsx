@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { AIUsage, DiagnosisResult, CompanyProfile } from "@/lib/types";
+import { saveEntry } from "@/lib/storage/history";
 
 const AI_OPTIONS: { value: AIUsage; label: string }[] = [
   { value: "chatbot", label: "챗봇/대화형" },
@@ -40,6 +41,21 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
+
+  // 진단 결과 자동 저장
+  useEffect(() => {
+    if (!result) return;
+    saveEntry({
+      type: "diagnose",
+      title: profile.name || "(이름 없음)",
+      overallRisk: result.overallRisk,
+      obligationCount: result.items.filter(
+        (i) => i.applicability !== "not_applicable"
+      ).length,
+      payload: { profile, result },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
 
   function toggleUsage(value: AIUsage) {
     setProfile((p) => {
