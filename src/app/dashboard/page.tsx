@@ -60,9 +60,6 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
               대시보드
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              최근 스캔/진단 이력을 한눈에. (브라우저 localStorage 저장 — 최신 50건)
-            </p>
           </div>
         </div>
       </header>
