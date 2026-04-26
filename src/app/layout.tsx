@@ -29,9 +29,10 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
+      <body className="min-h-full flex flex-col text-slate-900">
         <TopNav />
         <div className="flex-1">{children}</div>
+        <SiteFooter />
       </body>
     </html>
   );
@@ -39,16 +40,16 @@ export default function RootLayout({
 
 function TopNav() {
   return (
-    <header className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
       <div className="mx-auto w-full max-w-6xl px-6 h-14 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2 group">
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center font-bold text-sm">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center font-bold text-sm text-white shadow-sm shadow-indigo-300/40">
             L
           </div>
-          <span className="font-semibold tracking-tight group-hover:text-indigo-200 transition">
+          <span className="font-semibold tracking-tight text-slate-900 group-hover:text-indigo-600 transition">
             LexOS
           </span>
-          <span className="text-xs text-zinc-500 hidden sm:inline">
+          <span className="text-xs text-slate-400 hidden sm:inline">
             · AI기본법 컴플라이언스
           </span>
         </Link>
@@ -66,9 +67,18 @@ function NavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="px-3 py-1.5 rounded-md text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition"
+      className="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
     >
       {label}
     </Link>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="border-t border-slate-200 bg-white/40 mt-12 py-6 text-center text-xs text-slate-400">
+      © {new Date().getFullYear()} LexOS · 본 도구의 결과는 자동 추론이며 법적
+      자문이 아닙니다.
+    </footer>
   );
 }

@@ -8,16 +8,16 @@ import { ScanResultView } from "@/app/scan/page";
 import type { DiagnosisResult, CompanyProfile } from "@/lib/types";
 
 const RISK_BADGE: Record<string, string> = {
-  high: "bg-red-500/20 text-red-300 border border-red-500/40",
-  medium: "bg-amber-500/20 text-amber-300 border border-amber-500/40",
-  low: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40",
-  none: "bg-zinc-700/40 text-zinc-300 border border-zinc-600",
+  high: "bg-rose-50 text-rose-700 border border-rose-200",
+  medium: "bg-amber-50 text-amber-700 border border-amber-200",
+  low: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  none: "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
 const APP_BADGE: Record<string, string> = {
-  applicable: "bg-red-500/15 text-red-300",
-  conditional: "bg-amber-500/15 text-amber-300",
-  not_applicable: "bg-zinc-700/40 text-zinc-400",
+  applicable: "bg-rose-100 text-rose-700",
+  conditional: "bg-amber-100 text-amber-700",
+  not_applicable: "bg-slate-100 text-slate-500",
 };
 
 export default function HistoryDetailPage() {
@@ -33,7 +33,7 @@ export default function HistoryDetailPage() {
 
   if (!hydrated) {
     return (
-      <main className="mx-auto w-full max-w-5xl px-6 py-10 text-zinc-500 text-sm">
+      <main className="mx-auto w-full max-w-5xl px-6 py-10 text-slate-400 text-sm">
         로딩…
       </main>
     );
@@ -42,12 +42,12 @@ export default function HistoryDetailPage() {
   if (!entry) {
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-10">
-        <div className="rounded-xl border border-dashed border-zinc-700 p-8 text-center text-zinc-500">
+        <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-slate-400">
           이력을 찾을 수 없습니다.
           <div className="mt-3">
             <Link
               href="/dashboard"
-              className="text-indigo-300 hover:text-indigo-200 underline underline-offset-2"
+              className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
             >
               ← 대시보드로
             </Link>
@@ -63,7 +63,7 @@ export default function HistoryDetailPage() {
         <nav className="text-sm mb-3">
           <Link
             href="/dashboard"
-            className="text-indigo-300 hover:text-indigo-200 underline underline-offset-2"
+            className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
           >
             ← 대시보드
           </Link>
@@ -72,8 +72,8 @@ export default function HistoryDetailPage() {
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded ${
               entry.type === "scan"
-                ? "bg-indigo-500/15 text-indigo-300"
-                : "bg-fuchsia-500/15 text-fuchsia-300"
+                ? "bg-indigo-100 text-indigo-700"
+                : "bg-fuchsia-100 text-fuchsia-700"
             }`}
           >
             {entry.type === "scan" ? "스캔" : "진단"}
@@ -85,7 +85,7 @@ export default function HistoryDetailPage() {
           >
             {entry.overallRisk.toUpperCase()}
           </span>
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-slate-400">
             {new Date(entry.createdAt).toLocaleString("ko-KR")}
           </span>
         </div>
@@ -119,40 +119,40 @@ function DiagnoseDetail({
   const { profile, result } = payload;
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="text-lg font-semibold mb-2">회사 프로필 (스냅샷)</h2>
-        <div className="grid grid-cols-2 gap-2 text-sm text-zinc-300">
+        <div className="grid grid-cols-2 gap-2 text-sm text-slate-700">
           <div>
-            <span className="text-zinc-500">회사명:</span> {profile.name}
+            <span className="text-slate-400">회사명:</span> {profile.name}
           </div>
           <div>
-            <span className="text-zinc-500">업종:</span> {profile.industry}
+            <span className="text-slate-400">업종:</span> {profile.industry}
           </div>
           <div>
-            <span className="text-zinc-500">임직원:</span>{" "}
+            <span className="text-slate-400">임직원:</span>{" "}
             {profile.employeeCount}명
           </div>
           <div>
-            <span className="text-zinc-500">연매출:</span>{" "}
+            <span className="text-slate-400">연매출:</span>{" "}
             {profile.annualRevenueKRW.toLocaleString("ko-KR")}원
           </div>
           <div className="col-span-2">
-            <span className="text-zinc-500">AI 사용:</span>{" "}
+            <span className="text-slate-400">AI 사용:</span>{" "}
             {profile.aiUsages.join(", ")}
           </div>
           <div className="col-span-2">
-            <span className="text-zinc-500">해외 AI:</span>{" "}
+            <span className="text-slate-400">해외 AI:</span>{" "}
             {profile.usesForeignAI ? "예" : "아니오"}
           </div>
           {profile.notes && (
             <div className="col-span-2">
-              <span className="text-zinc-500">메모:</span> {profile.notes}
+              <span className="text-slate-400">메모:</span> {profile.notes}
             </div>
           )}
         </div>
       </div>
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">진단 결과</h2>
           <span
@@ -163,12 +163,12 @@ function DiagnoseDetail({
             전체 위험: {result.overallRisk.toUpperCase()}
           </span>
         </div>
-        <p className="text-sm text-zinc-300 leading-relaxed">{result.summary}</p>
+        <p className="text-sm text-slate-700 leading-relaxed">{result.summary}</p>
       </div>
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="font-semibold mb-3">최우선 조치 (Top 3)</h3>
-        <ol className="list-decimal list-inside space-y-1 text-sm text-zinc-200">
+        <ol className="list-decimal list-inside space-y-1 text-sm text-slate-800">
           {result.recommendedNextSteps.map((s, i) => (
             <li key={i}>{s}</li>
           ))}
@@ -180,11 +180,11 @@ function DiagnoseDetail({
         {result.items.map((item) => (
           <article
             key={item.obligationId}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5"
+            className="rounded-xl border border-slate-200 bg-white p-5"
           >
             <header className="flex items-start justify-between gap-3 mb-2">
               <div>
-                <div className="text-xs text-zinc-500">{item.legalBasis}</div>
+                <div className="text-xs text-slate-400">{item.legalBasis}</div>
                 <div className="font-semibold">{item.title}</div>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -204,15 +204,15 @@ function DiagnoseDetail({
                 </span>
               </div>
             </header>
-            <p className="text-sm text-zinc-300 leading-relaxed mb-3">
+            <p className="text-sm text-slate-700 leading-relaxed mb-3">
               {item.reasoning}
             </p>
             {item.actionItems.length > 0 && (
               <div className="mb-2">
-                <div className="text-xs text-zinc-400 mb-1">이행 체크리스트</div>
+                <div className="text-xs text-slate-500 mb-1">이행 체크리스트</div>
                 <ul className="space-y-1">
                   {item.actionItems.map((a, i) => (
-                    <li key={i} className="text-sm text-zinc-200 flex gap-2">
+                    <li key={i} className="text-sm text-slate-800 flex gap-2">
                       <input type="checkbox" className="mt-1" />
                       <span>{a}</span>
                     </li>
@@ -220,13 +220,13 @@ function DiagnoseDetail({
                 </ul>
               </div>
             )}
-            <div className="flex flex-wrap gap-3 text-xs text-zinc-400 mt-3 pt-3 border-t border-zinc-800">
+            <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200">
               <div>
-                <span className="text-zinc-500">마감:</span> {item.deadline}
+                <span className="text-slate-400">마감:</span> {item.deadline}
               </div>
               {item.evidenceTypes.length > 0 && (
                 <div>
-                  <span className="text-zinc-500">증거:</span>{" "}
+                  <span className="text-slate-400">증거:</span>{" "}
                   {item.evidenceTypes.join(", ")}
                 </div>
               )}

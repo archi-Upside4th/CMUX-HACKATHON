@@ -18,16 +18,16 @@ const AI_OPTIONS: { value: AIUsage; label: string }[] = [
 ];
 
 const RISK_BADGE: Record<string, string> = {
-  high: "bg-red-500/20 text-red-300 border border-red-500/40",
-  medium: "bg-amber-500/20 text-amber-300 border border-amber-500/40",
-  low: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40",
-  none: "bg-zinc-700/40 text-zinc-300 border border-zinc-600",
+  high: "bg-rose-50 text-rose-700 border border-rose-200",
+  medium: "bg-amber-50 text-amber-700 border border-amber-200",
+  low: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  none: "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
 const APP_BADGE: Record<string, string> = {
-  applicable: "bg-red-500/15 text-red-300",
-  conditional: "bg-amber-500/15 text-amber-300",
-  not_applicable: "bg-zinc-700/40 text-zinc-400",
+  applicable: "bg-rose-100 text-rose-700",
+  conditional: "bg-amber-100 text-amber-700",
+  not_applicable: "bg-slate-100 text-slate-500",
 };
 
 export default function Home() {
@@ -110,30 +110,29 @@ export default function Home() {
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       <header className="mb-8">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center font-bold">
-            L
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">LexOS</h1>
-            <p className="text-sm text-zinc-400">
-              AI 규제 자동 대응 플랫폼 · AI기본법 30초 진단
-            </p>
-          </div>
+        <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-600 mb-2">
+          회사 프로필 → AI 기본법 30초 진단
         </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          우리 회사가 위반할 수 있는 의무는 무엇인가?
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          입력값과 검증된 법령 코퍼스를 매칭해 9개 의무별 적용·위험·근거 조문을
+          한 번에 확인합니다.
+        </p>
       </header>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <form
           onSubmit={onSubmit}
-          className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-5"
+          className="card-hover rounded-2xl border border-slate-200 bg-white p-6 space-y-5 shadow-sm"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">회사 프로필</h2>
             <button
               type="button"
               onClick={loadDemoProfile}
-              className="text-xs text-indigo-300 hover:text-indigo-200 underline underline-offset-2"
+              className="text-xs text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
             >
               데모 프로필 자동입력
             </button>
@@ -205,8 +204,8 @@ export default function Home() {
                     onClick={() => toggleUsage(opt.value)}
                     className={`text-left text-sm rounded-md px-3 py-2 border transition ${
                       checked
-                        ? "border-indigo-400 bg-indigo-500/15 text-indigo-100"
-                        : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500"
+                        ? "border-indigo-500 bg-indigo-100 text-indigo-700"
+                        : "border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/40"
                     }`}
                   >
                     {opt.label}
@@ -242,7 +241,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading || profile.aiUsages.length === 0}
-            className="w-full rounded-lg bg-indigo-500 hover:bg-indigo-400 disabled:bg-zinc-700 disabled:text-zinc-400 px-4 py-3 font-medium transition"
+            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 px-4 py-3 font-medium transition"
           >
             {loading ? "진단 중…" : "AI기본법 30초 진단 실행"}
           </button>
@@ -250,20 +249,20 @@ export default function Home() {
 
         <div className="space-y-4">
           {!result && !error && !loading && (
-            <div className="rounded-xl border border-dashed border-zinc-700 p-8 text-center text-zinc-500">
+            <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-slate-400">
               왼쪽 폼을 채운 뒤 진단을 실행하면<br />
               결과가 여기에 표시됩니다.
             </div>
           )}
 
           {loading && (
-            <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-6 text-indigo-200 animate-pulse">
+            <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-6 text-indigo-700 animate-pulse">
               Gemini가 회사 프로필과 AI기본법 조항을 매칭 중…
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-6 text-red-200">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
               <strong className="block mb-1">오류</strong>
               <pre className="text-xs whitespace-pre-wrap">{error}</pre>
             </div>
@@ -285,8 +284,8 @@ function VerificationStats({ items }: { items: DiagnosisResult["items"] }) {
     <div
       className={`text-xs rounded border px-3 py-2 ${
         allOk
-          ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-200"
-          : "border-amber-500/40 bg-amber-500/5 text-amber-200"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-amber-200 bg-amber-50 text-amber-700"
       }`}
     >
       <span className="font-mono mr-2">
@@ -308,7 +307,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs uppercase tracking-wider text-zinc-400 mb-1">
+      <span className="block text-xs uppercase tracking-wider text-slate-500 mb-1">
         {label}
       </span>
       {children}
@@ -317,27 +316,30 @@ function Field({
 }
 
 const inputCls =
-  "w-full rounded-md bg-zinc-950 border border-zinc-700 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400";
+  "w-full rounded-md bg-white border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500";
 
 function ResultPanel({ result }: { result: DiagnosisResult }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50/60 via-white to-fuchsia-50/40 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">진단 결과</h2>
           <span
-            className={`text-xs px-2 py-1 rounded-md ${RISK_BADGE[result.overallRisk]}`}
+            className={`text-xs px-2.5 py-1 rounded-full font-medium ${RISK_BADGE[result.overallRisk]}`}
           >
             전체 위험: {result.overallRisk.toUpperCase()}
           </span>
         </div>
-        <p className="text-sm text-zinc-300 leading-relaxed mb-3">{result.summary}</p>
+        <p className="text-sm text-slate-700 leading-relaxed mb-3">{result.summary}</p>
         <VerificationStats items={result.items} />
       </div>
 
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
-        <h3 className="font-semibold mb-3">최우선 조치 (Top 3)</h3>
-        <ol className="list-decimal list-inside space-y-1 text-sm text-zinc-200">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h3 className="font-semibold mb-3 flex items-center gap-2">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
+          최우선 조치 (Top 3)
+        </h3>
+        <ol className="list-decimal list-inside space-y-1 text-sm text-slate-800">
           {result.recommendedNextSteps.map((s, i) => (
             <li key={i}>{s}</li>
           ))}
@@ -349,13 +351,13 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
         {result.items.map((item) => (
           <article
             key={item.obligationId}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5"
+            className="rounded-xl border border-slate-200 bg-white p-5"
           >
             <header className="flex items-start justify-between gap-3 mb-2">
               <div className="min-w-0">
-                <div className="text-xs text-zinc-500">{item.legalBasis}</div>
+                <div className="text-xs text-slate-400">{item.legalBasis}</div>
                 <div className="font-semibold">{item.title}</div>
-                <div className="text-[10px] text-zinc-600 font-mono mt-0.5">
+                <div className="text-[10px] text-slate-400 font-mono mt-0.5">
                   {item.obligationId}
                 </div>
               </div>
@@ -373,12 +375,12 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
                 </span>
               </div>
             </header>
-            <p className="text-sm text-zinc-300 leading-relaxed mb-3">
+            <p className="text-sm text-slate-700 leading-relaxed mb-3">
               {item.reasoning}
             </p>
 
             <details className="mb-3" open={item.applicability !== "not_applicable"}>
-              <summary className="cursor-pointer text-xs text-indigo-300 hover:text-indigo-200 mb-1">
+              <summary className="cursor-pointer text-xs text-indigo-600 hover:text-indigo-700 mb-1">
                 근거 조문 인용 ({item.citations.length})
               </summary>
               <div className="mt-2">
@@ -388,7 +390,7 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
                     href={obligationSourceUrl(item.obligationId)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block mt-2 text-[10px] text-zinc-500 hover:text-indigo-300 underline underline-offset-2"
+                    className="block mt-2 text-[10px] text-slate-400 hover:text-indigo-600 underline underline-offset-2"
                   >
                     원문: 국가법령정보센터 →
                   </a>
@@ -398,10 +400,10 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
 
             {item.actionItems.length > 0 && (
               <div className="mb-2">
-                <div className="text-xs text-zinc-400 mb-1">이행 체크리스트</div>
+                <div className="text-xs text-slate-500 mb-1">이행 체크리스트</div>
                 <ul className="space-y-1">
                   {item.actionItems.map((a, i) => (
-                    <li key={i} className="text-sm text-zinc-200 flex gap-2">
+                    <li key={i} className="text-sm text-slate-800 flex gap-2">
                       <input type="checkbox" className="mt-1" />
                       <span>{a}</span>
                     </li>
@@ -409,13 +411,13 @@ function ResultPanel({ result }: { result: DiagnosisResult }) {
                 </ul>
               </div>
             )}
-            <div className="flex flex-wrap gap-3 text-xs text-zinc-400 mt-3 pt-3 border-t border-zinc-800">
+            <div className="flex flex-wrap gap-3 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-200">
               <div>
-                <span className="text-zinc-500">마감:</span> {item.deadline}
+                <span className="text-slate-400">마감:</span> {item.deadline}
               </div>
               {item.evidenceTypes.length > 0 && (
                 <div>
-                  <span className="text-zinc-500">증거:</span>{" "}
+                  <span className="text-slate-400">증거:</span>{" "}
                   {item.evidenceTypes.join(", ")}
                 </div>
               )}

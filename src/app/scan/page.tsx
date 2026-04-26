@@ -51,15 +51,15 @@ interface ScanResponse {
 }
 
 const RISK_BADGE: Record<string, string> = {
-  high: "bg-red-500/20 text-red-300 border border-red-500/40",
-  medium: "bg-amber-500/20 text-amber-300 border border-amber-500/40",
-  low: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40",
+  high: "bg-rose-50 text-rose-700 border border-rose-200",
+  medium: "bg-amber-50 text-amber-700 border border-amber-200",
+  low: "bg-emerald-50 text-emerald-700 border border-emerald-200",
 };
 
 const APPLICABILITY_BADGE: Record<string, string> = {
-  applicable: "bg-red-500/15 text-red-300 border border-red-500/30",
-  conditional: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
-  not_applicable: "bg-zinc-700/40 text-zinc-400 border border-zinc-700",
+  applicable: "bg-rose-100 text-rose-700 border border-rose-200",
+  conditional: "bg-amber-100 text-amber-700 border border-amber-200",
+  not_applicable: "bg-slate-100 text-slate-500 border border-slate-300",
 };
 
 const APPLICABILITY_LABEL: Record<string, string> = {
@@ -140,18 +140,24 @@ export default function ScanPage() {
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">코드 스캔</h1>
-        <p className="text-sm text-zinc-400">
-          GitHub 저장소 → AI 시스템 식별 → 서비스 프로파일링 → AI기본법 컴플라이언스 리포트
+        <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-600 mb-2">
+          GitHub URL → AI 시스템 자동 식별
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          코드 스캔
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          저장소 클론 → 카탈로그 매칭 → 서비스 프로파일링 → 검증된 컴플라이언스
+          리포트.
         </p>
       </header>
 
       <form
         onSubmit={onSubmit}
-        className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 mb-6 space-y-4"
+        className="card-hover rounded-2xl border border-slate-200 bg-white p-6 mb-6 space-y-4 shadow-sm"
       >
         <label className="block">
-          <span className="block text-xs uppercase tracking-wider text-zinc-400 mb-1">
+          <span className="block text-xs uppercase tracking-wider text-slate-500 mb-1">
             GitHub 저장소 URL (https://)
           </span>
           <input
@@ -160,23 +166,23 @@ export default function ScanPage() {
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             placeholder="https://github.com/owner/repo"
-            className="w-full rounded-md bg-zinc-950 border border-zinc-700 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            className="w-full rounded-md bg-white border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
-          <span className="block text-xs text-zinc-500 mt-1">
+          <span className="block text-xs text-slate-400 mt-1">
             github.com / gitlab.com / bitbucket.org / codeberg.org 만 허용. depth=1, blob ≤10MB.
           </span>
         </label>
         <button
           type="submit"
           disabled={loading || repoUrl.length === 0}
-          className="w-full rounded-lg bg-indigo-500 hover:bg-indigo-400 disabled:bg-zinc-700 disabled:text-zinc-400 px-4 py-3 font-medium transition"
+          className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 px-4 py-3 font-medium transition"
         >
           {loading ? "분석 중… (수집 → 합성 → 서비스 프로파일 → 컴플라이언스 리포트)" : "스캔 실행"}
         </button>
       </form>
 
       {error && (
-        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-6 text-red-200 mb-6">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700 mb-6">
           <strong className="block mb-1">오류</strong>
           <pre className="text-xs whitespace-pre-wrap">{error}</pre>
         </div>
@@ -235,21 +241,21 @@ function ComplianceReportView({
           <Link
             href={`/scan/print/${savedId}`}
             target="_blank"
-            className="text-xs px-3 py-1.5 rounded border border-zinc-700 hover:bg-zinc-800 transition"
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition shadow-sm"
           >
-            인쇄용 페이지 / PDF 다운로드 →
+            공식 보고서 인쇄 / PDF 다운로드 →
           </Link>
         </div>
       )}
 
       {/* Executive Summary */}
-      <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-indigo-500/5 to-fuchsia-500/5 p-6">
+      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50 p-6 shadow-sm">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0">
-            <div className="text-xs text-zinc-500 mb-1">컴플라이언스 리포트</div>
-            <div className="text-sm text-zinc-300 break-words">
+            <div className="text-xs text-slate-400 mb-1">컴플라이언스 리포트</div>
+            <div className="text-sm text-slate-700 break-words">
               <code className="text-xs">{repoUrl}</code>{" "}
-              <span className="text-zinc-500">·</span>{" "}
+              <span className="text-slate-400">·</span>{" "}
               <code className="text-xs">{commitSha.slice(0, 12)}</code>
             </div>
           </div>
@@ -265,21 +271,21 @@ function ComplianceReportView({
           <Stat label="P1 긴급 액션" value={`${report.roadmap.p1_urgent.length}개`} />
         </div>
 
-        <div className="border-t border-zinc-800 pt-4">
-          <div className="text-xs uppercase tracking-wider text-indigo-300 mb-2">
+        <div className="border-t border-slate-200 pt-4">
+          <div className="text-xs uppercase tracking-wider text-indigo-600 mb-2">
             Executive Summary
           </div>
-          <p className="text-sm text-zinc-100 leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm text-slate-900 leading-relaxed whitespace-pre-wrap">
             {report.executiveSummary}
           </p>
         </div>
       </div>
 
       {/* Service Profile */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">서비스 프로파일</h2>
-        <p className="text-sm text-zinc-100 mb-3">{profile.servicePurpose}</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-zinc-300">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm uppercase tracking-wider text-slate-500 mb-3">서비스 프로파일</h2>
+        <p className="text-sm text-slate-900 mb-3">{profile.servicePurpose}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-700">
           <Pair k="사용자" v={profile.userTypes.join(", ")} />
           <Pair k="도메인" v={profile.primaryDomain} />
           <Pair k="데이터 민감도" v={profile.dataSensitivity} />
@@ -288,12 +294,12 @@ function ComplianceReportView({
           <Pair k="외부 노출" v={profile.customerExposure ? "예" : "아니오"} />
         </div>
         <details className="mt-3">
-          <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-200">
+          <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-800">
             판단 근거
           </summary>
-          <p className="text-xs text-zinc-300 mt-2 leading-relaxed">{profile.reasoning}</p>
+          <p className="text-xs text-slate-700 mt-2 leading-relaxed">{profile.reasoning}</p>
           {profile.evidenceFiles.length > 0 && (
-            <ul className="mt-2 font-mono text-[11px] text-zinc-500 space-y-0.5">
+            <ul className="mt-2 font-mono text-[11px] text-slate-400 space-y-0.5">
               {profile.evidenceFiles.slice(0, 10).map((f) => (
                 <li key={f}>· {f}</li>
               ))}
@@ -303,8 +309,8 @@ function ComplianceReportView({
       </div>
 
       {/* Risk Register */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm uppercase tracking-wider text-slate-500 mb-3">
           리스크 레지스터 ({report.riskRegister.length})
         </h2>
         <div className="space-y-2">
@@ -315,8 +321,8 @@ function ComplianceReportView({
       </div>
 
       {/* System Analyses */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm uppercase tracking-wider text-slate-500 mb-3">
           시스템 분석 ({report.systemAnalyses.length})
         </h2>
         <div className="space-y-2">
@@ -331,9 +337,9 @@ function ComplianceReportView({
       </div>
 
       {/* Obligation Deep Dive */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <h2 className="text-sm uppercase tracking-wider text-zinc-400">
+          <h2 className="text-sm uppercase tracking-wider text-slate-500">
             의무 심화 분석 ({report.obligationDeepDive.length}개 / 9개)
           </h2>
           <ObligationVerificationStats items={report.obligationDeepDive} />
@@ -346,8 +352,8 @@ function ComplianceReportView({
       </div>
 
       {/* Roadmap */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">로드맵</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm uppercase tracking-wider text-slate-500 mb-3">로드맵</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <RoadmapColumn title="P1 긴급 (30일)" tone="red" items={report.roadmap.p1_urgent} />
           <RoadmapColumn
@@ -361,14 +367,14 @@ function ComplianceReportView({
 
       {/* Open Questions */}
       {report.openQuestions.length > 0 && (
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-          <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-sm uppercase tracking-wider text-slate-500 mb-3">
             정보 부족 / 인간 결정 필요 ({report.openQuestions.length})
           </h2>
-          <ul className="space-y-2 text-sm text-zinc-200">
+          <ul className="space-y-2 text-sm text-slate-800">
             {report.openQuestions.map((q, i) => (
               <li key={i} className="flex gap-2">
-                <span className="text-zinc-500">Q{i + 1}.</span>
+                <span className="text-slate-400">Q{i + 1}.</span>
                 <span>{q}</span>
               </li>
             ))}
@@ -392,8 +398,8 @@ function ObligationVerificationStats({
     <span
       className={`text-[11px] px-2 py-1 rounded border ${
         allOk
-          ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-200"
-          : "border-amber-500/40 bg-amber-500/5 text-amber-200"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-amber-200 bg-amber-50 text-amber-700"
       }`}
     >
       RAG 검증 {verified}/{total}{" "}
@@ -412,46 +418,46 @@ function RiskRow({
   const score = risk.severity * risk.likelihood;
   const tone =
     score >= 16
-      ? "border-red-500/40 bg-red-500/5"
+      ? "border-rose-200 bg-rose-50"
       : score >= 9
-        ? "border-amber-500/40 bg-amber-500/5"
-        : "border-zinc-700 bg-zinc-900/40";
+        ? "border-amber-200 bg-amber-50"
+        : "border-slate-300 bg-white";
   return (
     <details className={`rounded-lg border ${tone} p-3`}>
       <summary className="cursor-pointer flex items-start gap-3 text-sm">
         <div className="flex flex-col items-center shrink-0 w-12">
-          <div className="text-xs text-zinc-500">S×L</div>
+          <div className="text-xs text-slate-400">S×L</div>
           <div className="text-base font-semibold">
             {risk.severity}×{risk.likelihood}
           </div>
-          <div className="text-[10px] text-zinc-500">={score}</div>
+          <div className="text-[10px] text-slate-400">={score}</div>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-zinc-100">{risk.title}</div>
-          <div className="text-xs text-zinc-400 mt-0.5">
-            <span className="text-zinc-500">담당:</span> {OWNER_LABEL[risk.owner] ?? risk.owner}
+          <div className="font-medium text-slate-900">{risk.title}</div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            <span className="text-slate-400">담당:</span> {OWNER_LABEL[risk.owner] ?? risk.owner}
             {risk.affectedObligations.length > 0 && (
               <>
-                <span className="text-zinc-600"> · </span>
-                <span className="text-zinc-500">의무:</span>{" "}
+                <span className="text-slate-400"> · </span>
+                <span className="text-slate-400">의무:</span>{" "}
                 {risk.affectedObligations.join(", ")}
               </>
             )}
           </div>
         </div>
       </summary>
-      <div className="mt-3 pl-15 space-y-2 text-xs text-zinc-300">
+      <div className="mt-3 pl-15 space-y-2 text-xs text-slate-700">
         <div>
-          <span className="text-zinc-500 uppercase tracking-wider text-[10px]">영향: </span>
+          <span className="text-slate-400 uppercase tracking-wider text-[10px]">영향: </span>
           {risk.impact}
         </div>
         <div>
-          <span className="text-zinc-500 uppercase tracking-wider text-[10px]">완화: </span>
+          <span className="text-slate-400 uppercase tracking-wider text-[10px]">완화: </span>
           {risk.mitigation}
         </div>
         {risk.affectedSystemIds.length > 0 && (
           <div>
-            <span className="text-zinc-500 uppercase tracking-wider text-[10px]">시스템: </span>
+            <span className="text-slate-400 uppercase tracking-wider text-[10px]">시스템: </span>
             {risk.affectedSystemIds.map((id) => systemNameById.get(id) ?? id).join(", ")}
           </div>
         )}
@@ -468,12 +474,12 @@ function SystemAnalysisRow({
   systemName: string;
 }) {
   return (
-    <details className="rounded-lg border border-zinc-700 bg-zinc-900/40 p-3">
-      <summary className="cursor-pointer text-sm font-medium text-zinc-100">
+    <details className="rounded-lg border border-slate-300 bg-white p-3">
+      <summary className="cursor-pointer text-sm font-medium text-slate-900">
         {systemName}
-        <span className="text-xs text-zinc-500 ml-2">— {analysis.role}</span>
+        <span className="text-xs text-slate-400 ml-2">— {analysis.role}</span>
       </summary>
-      <div className="mt-3 space-y-2 text-xs text-zinc-300">
+      <div className="mt-3 space-y-2 text-xs text-slate-700">
         <Block title="데이터 흐름">{analysis.dataFlow}</Block>
         {analysis.crossSystemInteractions.length > 0 && (
           <Block title="다른 시스템과의 상호작용">
@@ -511,7 +517,7 @@ function ObligationRow({
 }) {
   return (
     <details
-      className="rounded-lg border border-zinc-700 bg-zinc-900/40 p-3"
+      className="rounded-lg border border-slate-300 bg-white p-3"
       open={item.applicability === "applicable"}
     >
       <summary className="cursor-pointer flex items-start gap-3 text-sm">
@@ -521,12 +527,12 @@ function ObligationRow({
           {APPLICABILITY_LABEL[item.applicability]}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-zinc-100">{item.title}</div>
-          <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{item.obligationId}</div>
+          <div className="font-medium text-slate-900">{item.title}</div>
+          <div className="text-[10px] text-slate-400 font-mono mt-0.5">{item.obligationId}</div>
         </div>
         <VerifiedBadge verified={item.verified} />
       </summary>
-      <div className="mt-3 space-y-2 text-xs text-zinc-300">
+      <div className="mt-3 space-y-2 text-xs text-slate-700">
         <Block title="판단 근거">{item.rationale}</Block>
         <Block title={`근거 조문 인용 (${item.citations.length})`}>
           <CitationsBlock citations={item.citations} obligationId={item.obligationId} />
@@ -535,7 +541,7 @@ function ObligationRow({
               href={obligationSourceUrl(item.obligationId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="block mt-2 text-[10px] text-zinc-500 hover:text-indigo-300 underline underline-offset-2"
+              className="block mt-2 text-[10px] text-slate-400 hover:text-indigo-600 underline underline-offset-2"
             >
               원문: 국가법령정보센터 →
             </a>
@@ -569,7 +575,7 @@ function ObligationRow({
         )}
         {item.blockers.length > 0 && (
           <Block title="블로커">
-            <ul className="space-y-0.5 list-disc list-inside text-amber-300">
+            <ul className="space-y-0.5 list-disc list-inside text-amber-700">
               {item.blockers.map((b, i) => <li key={i}>{b}</li>)}
             </ul>
           </Block>
@@ -589,34 +595,34 @@ function RoadmapColumn({
   items: ActionItem[];
 }) {
   const toneCls = {
-    red: "border-red-500/40 text-red-300",
-    amber: "border-amber-500/40 text-amber-300",
-    sky: "border-sky-500/40 text-sky-300",
+    red: "border-rose-300 text-rose-700",
+    amber: "border-amber-300 text-amber-700",
+    sky: "border-sky-300 text-sky-700",
   }[tone];
   return (
-    <div className={`rounded-lg border ${toneCls.split(" ")[0]} bg-zinc-950/40 p-3`}>
+    <div className={`rounded-lg border ${toneCls.split(" ")[0]} bg-slate-50/80 p-3`}>
       <h3 className={`text-xs uppercase tracking-wider mb-3 ${toneCls.split(" ")[1]}`}>
         {title} · {items.length}건
       </h3>
       <ul className="space-y-2">
         {items.length === 0 && (
-          <li className="text-xs text-zinc-500">(해당 항목 없음)</li>
+          <li className="text-xs text-slate-400">(해당 항목 없음)</li>
         )}
         {items.map((a, i) => (
           <li
             key={i}
-            className="rounded border border-zinc-800 bg-zinc-900/60 p-2 text-xs text-zinc-200"
+            className="rounded border border-slate-200 bg-white p-2 text-xs text-slate-800"
           >
             <div className="font-medium">{a.title}</div>
             <div className="mt-1 flex flex-wrap gap-1 text-[10px]">
-              <span className="px-1.5 py-0.5 rounded bg-zinc-800">
+              <span className="px-1.5 py-0.5 rounded bg-slate-100">
                 {OWNER_LABEL[a.owner] ?? a.owner}
               </span>
-              <span className="px-1.5 py-0.5 rounded bg-zinc-800">
+              <span className="px-1.5 py-0.5 rounded bg-slate-100">
                 {EFFORT_LABEL[a.effort]}
               </span>
               {a.relatedObligations.map((o) => (
-                <span key={o} className="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-200">
+                <span key={o} className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
                   {o}
                 </span>
               ))}
@@ -632,13 +638,13 @@ function BareSystemsView({ result }: { result: ScanResponse }) {
   const overall = overallRiskOf(result.systems);
   return (
     <section className="space-y-6">
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <div className="text-xs text-zinc-500 mb-1">스캔 결과 (리포트 미생성)</div>
-            <div className="text-sm text-zinc-300 break-words">
+            <div className="text-xs text-slate-400 mb-1">스캔 결과 (리포트 미생성)</div>
+            <div className="text-sm text-slate-700 break-words">
               <code className="text-xs">{result.repoUrl}</code>{" "}
-              <span className="text-zinc-500">·</span>{" "}
+              <span className="text-slate-400">·</span>{" "}
               <code className="text-xs">{result.commitSha.slice(0, 12)}</code>
             </div>
           </div>
@@ -648,25 +654,25 @@ function BareSystemsView({ result }: { result: ScanResponse }) {
             </span>
           )}
         </div>
-        <div className="text-xs text-zinc-500">
+        <div className="text-xs text-slate-400">
           {result.reportError
             ? `Gemini 리포트 생성 실패: ${result.reportError}`
             : "GEMINI_API_KEY 미설정 — 결정적 시스템 식별 결과만 표시."}
         </div>
       </div>
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm uppercase tracking-wider text-slate-500 mb-3">
           검출 시스템 ({result.systems.length})
         </h2>
         <ul className="space-y-2 text-sm">
           {result.systems.map((s) => (
-            <li key={s.id} className="flex items-start gap-3 border-b border-zinc-800 pb-2">
+            <li key={s.id} className="flex items-start gap-3 border-b border-slate-200 pb-2">
               <span className={`text-[10px] px-2 py-0.5 rounded shrink-0 ${RISK_BADGE[s.derivedRiskTier]}`}>
                 {s.derivedRiskTier}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="font-medium">{s.name}</div>
-                <div className="text-xs text-zinc-400">{s.purpose}</div>
+                <div className="text-xs text-slate-500">{s.purpose}</div>
                 {s.triggeredObligations.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     {s.triggeredObligations.map((o) => (
@@ -686,8 +692,8 @@ function BareSystemsView({ result }: { result: ScanResponse }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs text-zinc-500 mb-0.5">{label}</div>
-      <div className="text-lg font-semibold text-zinc-100 truncate">{value}</div>
+      <div className="text-xs text-slate-400 mb-0.5">{label}</div>
+      <div className="text-lg font-semibold text-slate-900 truncate">{value}</div>
     </div>
   );
 }
@@ -695,7 +701,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function Pair({ k, v }: { k: string; v: string }) {
   return (
     <div>
-      <span className="text-zinc-500">{k}:</span> {v}
+      <span className="text-slate-400">{k}:</span> {v}
     </div>
   );
 }
@@ -703,8 +709,8 @@ function Pair({ k, v }: { k: string; v: string }) {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">{title}</div>
-      <div className="text-zinc-200">{children}</div>
+      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">{title}</div>
+      <div className="text-slate-800">{children}</div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ interface Props {
 export function CitationsBlock({ citations }: Props) {
   if (citations.length === 0) {
     return (
-      <div className="rounded border border-amber-500/40 bg-amber-500/10 p-2 text-[11px] text-amber-200">
+      <div className="rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-700">
         ⚠ 인용된 조문이 없습니다 — AI 응답 신뢰도 낮음. 법무 검토 권장.
       </div>
     );
@@ -25,30 +25,30 @@ export function CitationsBlock({ citations }: Props) {
             key={i}
             className={`rounded border p-2 text-[11px] leading-snug ${
               verified
-                ? "border-emerald-500/40 bg-emerald-500/5"
-                : "border-red-500/40 bg-red-500/10"
+                ? "border-emerald-200 bg-emerald-50"
+                : "border-rose-200 bg-rose-50"
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
               <span
                 className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
                   verified
-                    ? "bg-emerald-500/20 text-emerald-200"
-                    : "bg-red-500/20 text-red-200"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-rose-100 text-rose-700"
                 }`}
               >
                 {verified ? `✓ ${c.verifiedLocator}` : "✗ 검증실패"}
               </span>
               {!verified && (
-                <span className="text-[10px] text-red-300">
+                <span className="text-[10px] text-rose-700">
                   corpus 미일치 — 환각 가능성. 표시만 하고 신뢰하지 마세요.
                 </span>
               )}
             </div>
             <div
               className={`border-l-2 pl-2 ${
-                verified ? "border-emerald-400/60" : "border-red-400/60"
-              } text-zinc-200`}
+                verified ? "border-emerald-400" : "border-rose-400"
+              } text-slate-800`}
             >
               "{c.text}"
             </div>
@@ -64,8 +64,8 @@ export function VerifiedBadge({ verified }: { verified: boolean }) {
     <span
       className={`text-[10px] px-1.5 py-0.5 rounded ${
         verified
-          ? "bg-emerald-500/20 text-emerald-200 border border-emerald-500/40"
-          : "bg-red-500/20 text-red-200 border border-red-500/40"
+          ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+          : "bg-rose-100 text-rose-700 border border-rose-200"
       }`}
       title={
         verified
