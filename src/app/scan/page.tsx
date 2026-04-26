@@ -141,7 +141,7 @@ export default function ScanPage() {
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <header className="mb-8">
         <div className="text-[11px] uppercase tracking-[0.2em] text-indigo-600 mb-2">
-          GitHub URL → AI 시스템 자동 식별
+          GitHub URL 입력
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           코드 스캔
