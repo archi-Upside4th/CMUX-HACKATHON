@@ -146,10 +146,6 @@ export default function ScanPage() {
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
           코드 스캔
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          저장소 클론 → 카탈로그 매칭 → 서비스 프로파일링 → 검증된 컴플라이언스
-          리포트.
-        </p>
       </header>
 
       <form
