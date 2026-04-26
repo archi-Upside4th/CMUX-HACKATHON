@@ -1,0 +1,15 @@
+{
+  "description": "Python OpenAI 챗봇 — B2C/KR 운영. profile상 FOREIGN-REP 미해당이나 코드는 외국 모델 트리거 → SUSPECTED.",
+  "expectedSystems": [
+    { "catalogEntryId": "py.openai", "modelProviderContains": "OpenAI", "isForeignModel": true }
+  ],
+  "expectedObligations": ["AIBA-NOTICE", "AIBA-RISK-MGMT", "AIBA-FOREIGN-REP"],
+  "forbiddenObligations": ["AIBA-HIGH-IMPACT"],
+  "expectedMergedRequired": [
+    "AIBA-NOTICE",
+    "AIBA-DATA-GOVERNANCE",
+    "AIBA-RISK-MGMT",
+    "AIBA-PUBLIC-DISCLOSURE"
+  ],
+  "expectedContradictionKinds": []
+}

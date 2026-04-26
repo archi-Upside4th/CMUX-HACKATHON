@@ -1,0 +1,15 @@
+{
+  "description": "AI 없는 정적 사이트. profile에 의무 후보 있어도 코드에 AI 없으면 모두 NOT_APPLICABLE — short-circuit 검증.",
+  "expectedSystems": [],
+  "expectedObligations": [],
+  "forbiddenObligations": [
+    "AIBA-NOTICE",
+    "AIBA-RISK-MGMT",
+    "AIBA-FOREIGN-REP",
+    "AIBA-WATERMARK",
+    "AIBA-HIGH-IMPACT",
+    "AIBA-DATA-GOVERNANCE"
+  ],
+  "expectedMergedRequired": [],
+  "expectedContradictionKinds": []
+}

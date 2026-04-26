@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getEntry, type HistoryEntry } from "@/lib/storage/history";
-import { ScanResultView } from "@/app/scan/page";
+import { ScanResultView, type ScanResult } from "@/app/scan/ScanResultView";
 import type { DiagnosisResult, CompanyProfile } from "@/lib/types";
 
 const RISK_BADGE: Record<string, string> = {
@@ -97,7 +97,7 @@ export default function HistoryDetailPage() {
       {entry.type === "scan" ? (
         // ScanResultView 재사용 (savedId 전달 시 인쇄 버튼 노출)
         <ScanResultView
-          result={entry.payload as Parameters<typeof ScanResultView>[0]["result"]}
+          result={entry.payload as ScanResult}
           savedId={entry.id}
         />
       ) : (

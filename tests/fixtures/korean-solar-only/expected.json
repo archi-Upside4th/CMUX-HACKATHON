@@ -1,0 +1,15 @@
+{
+  "description": "Upstage Solar (한국 모델) — FOREIGN-REP 절대 트리거되면 안 됨 (regression guard).",
+  "expectedSystems": [
+    { "catalogEntryId": "py.upstage_solar", "modelProviderContains": "Upstage", "isForeignModel": false }
+  ],
+  "expectedObligations": ["AIBA-NOTICE"],
+  "forbiddenObligations": ["AIBA-FOREIGN-REP"],
+  "expectedMergedRequired": [
+    "AIBA-NOTICE",
+    "AIBA-DATA-GOVERNANCE",
+    "AIBA-RISK-MGMT",
+    "AIBA-PUBLIC-DISCLOSURE"
+  ],
+  "expectedContradictionKinds": []
+}

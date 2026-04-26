@@ -80,6 +80,16 @@ export default function PrintReportPage({
     setLoaded(true);
   }, [id]);
 
+  // ?auto=1 — 로딩 후 한 번만 자동 인쇄 다이얼로그.
+  useEffect(() => {
+    if (!loaded || !entry) return;
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("auto") !== "1") return;
+    const t = window.setTimeout(() => window.print(), 350);
+    return () => window.clearTimeout(t);
+  }, [loaded, entry]);
+
   if (!loaded) {
     return <div className="p-10 text-sm text-zinc-500">불러오는 중…</div>;
   }
@@ -198,13 +208,13 @@ function PrintableReport({
         }
       `}</style>
 
-      <div className="no-print sticky top-0 z-10 bg-white/85 backdrop-blur border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+      <div className="no-print sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
         <div className="text-sm text-slate-600">
           공식 보고서 미리보기 — 인쇄/PDF 저장 다이얼로그에서 "배경 그래픽"을 켜세요.
         </div>
         <button
           onClick={() => window.print()}
-          className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition shadow-sm"
+          className="rounded-md bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-medium text-white transition"
         >
           공식 인쇄 / PDF 저장
         </button>

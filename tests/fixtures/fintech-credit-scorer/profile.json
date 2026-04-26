@@ -1,0 +1,13 @@
+{
+  "serviceType": "B2B",
+  "userResidency": "KR_ONLY",
+  "deploymentRegion": "KR",
+  "personalData": { "processes": true, "sensitive": true },
+  "crossBorderTransfer": false,
+  "automationLevel": "AUTOMATED",
+  "highImpactDomains": ["FINANCE"],
+  "serviceStatus": "NEW_LAUNCH",
+  "scale": { "annualRevenueKRW": 50000000000, "monthlyActiveUsers": 200000 },
+  "organization": { "hasAIOfficer": false, "hasDPO": true, "hasCISO": true },
+  "assessments": { "impactDone": false, "riskDone": false }
+}

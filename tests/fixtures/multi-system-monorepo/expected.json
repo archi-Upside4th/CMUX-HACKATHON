@@ -1,0 +1,17 @@
+{
+  "description": "Anthropic + sklearn 모노레포. MULTI 배포 + MIXED 이용자 → FOREIGN-REP CONDITIONAL이나 코드(외국 SDK)로 확정.",
+  "expectedSystems": [
+    { "catalogEntryId": "ts.anthropic-sdk", "modelProviderContains": "Anthropic", "isForeignModel": true },
+    { "catalogEntryId": "py.sklearn" }
+  ],
+  "expectedObligations": ["AIBA-NOTICE", "AIBA-RISK-MGMT", "AIBA-FOREIGN-REP"],
+  "forbiddenObligations": [],
+  "expectedMergedRequired": [
+    "AIBA-NOTICE",
+    "AIBA-DATA-GOVERNANCE",
+    "AIBA-RISK-MGMT",
+    "AIBA-PUBLIC-DISCLOSURE",
+    "AIBA-FOREIGN-REP"
+  ],
+  "expectedContradictionKinds": ["HIGH_IMPACT_DENIED"]
+}

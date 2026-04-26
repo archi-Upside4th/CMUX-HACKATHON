@@ -1,0 +1,22 @@
+{
+  "description": "이력서 자동심사 — OpenAI + 채용 키워드. 고영향 + FOREIGN-REP(해외배포) + 데이터거버넌스 풀세트.",
+  "expectedSystems": [
+    { "catalogEntryId": "py.openai", "modelProviderContains": "OpenAI", "isForeignModel": true }
+  ],
+  "expectedObligations": [
+    "AIBA-HIGH-IMPACT",
+    "AIBA-NOTICE",
+    "AIBA-RISK-MGMT",
+    "AIBA-FOREIGN-REP"
+  ],
+  "forbiddenObligations": [],
+  "expectedMergedRequired": [
+    "AIBA-NOTICE",
+    "AIBA-HIGH-IMPACT",
+    "AIBA-IMPACT-ASSESSMENT",
+    "AIBA-DATA-GOVERNANCE",
+    "AIBA-RISK-MGMT",
+    "AIBA-FOREIGN-REP"
+  ],
+  "expectedContradictionKinds": []
+}

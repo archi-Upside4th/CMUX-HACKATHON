@@ -1,0 +1,13 @@
+{
+  "serviceType": "B2C",
+  "userResidency": "KR_ONLY",
+  "deploymentRegion": "KR",
+  "personalData": { "processes": true, "sensitive": false },
+  "crossBorderTransfer": false,
+  "automationLevel": "RECOMMENDATION",
+  "highImpactDomains": [],
+  "serviceStatus": "NEW_LAUNCH",
+  "scale": { "annualRevenueKRW": 1000000000, "monthlyActiveUsers": 8000 },
+  "organization": { "hasAIOfficer": false, "hasDPO": true, "hasCISO": false },
+  "assessments": { "impactDone": false, "riskDone": false }
+}

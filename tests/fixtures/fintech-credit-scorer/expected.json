@@ -1,0 +1,16 @@
+{
+  "description": "scikit-learn 신용평가 — credit_score 키워드 + 금융 자동결정. HIGH-IMPACT 의무 풀세트.",
+  "expectedSystems": [
+    { "catalogEntryId": "py.sklearn", "modelProviderContains": "in-house" }
+  ],
+  "expectedObligations": ["AIBA-HIGH-IMPACT", "AIBA-NOTICE"],
+  "forbiddenObligations": ["AIBA-FOREIGN-REP", "AIBA-WATERMARK"],
+  "expectedMergedRequired": [
+    "AIBA-NOTICE",
+    "AIBA-HIGH-IMPACT",
+    "AIBA-IMPACT-ASSESSMENT",
+    "AIBA-DATA-GOVERNANCE",
+    "AIBA-RISK-MGMT"
+  ],
+  "expectedContradictionKinds": []
+}

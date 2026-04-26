@@ -1,0 +1,13 @@
+{
+  "serviceType": "B2C",
+  "userResidency": "MIXED",
+  "deploymentRegion": "MULTI",
+  "personalData": { "processes": true, "sensitive": false },
+  "crossBorderTransfer": null,
+  "automationLevel": "RECOMMENDATION",
+  "highImpactDomains": [],
+  "serviceStatus": "NEW_LAUNCH",
+  "scale": { "annualRevenueKRW": 5000000000, "monthlyActiveUsers": 30000 },
+  "organization": { "hasAIOfficer": false, "hasDPO": true, "hasCISO": false },
+  "assessments": { "impactDone": false, "riskDone": false }
+}

@@ -1,0 +1,13 @@
+{
+  "serviceType": "B2B",
+  "userResidency": "MIXED",
+  "deploymentRegion": "OVERSEAS",
+  "personalData": { "processes": true, "sensitive": true },
+  "crossBorderTransfer": null,
+  "automationLevel": "AUTOMATED",
+  "highImpactDomains": ["HIRING"],
+  "serviceStatus": "NEW_LAUNCH",
+  "scale": { "annualRevenueKRW": 30000000000, "monthlyActiveUsers": 50000 },
+  "organization": { "hasAIOfficer": false, "hasDPO": false, "hasCISO": false },
+  "assessments": { "impactDone": false, "riskDone": false }
+}
