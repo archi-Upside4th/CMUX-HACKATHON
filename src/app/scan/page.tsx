@@ -1,7 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { saveEntry } from "@/lib/storage/history";
+import type {
+  ServiceProfile,
+  ComplianceReport,
+  RiskItem,
+  SystemAnalysis,
+  ObligationDeepDive,
+  ActionItem,
+} from "@/lib/report/schema";
 
 interface AISystem {
   id: string;
@@ -19,26 +28,7 @@ interface AISystem {
   derivedRiskTier: "high" | "medium" | "low";
   triggeredObligations: string[];
   confidence: "high" | "medium" | "low";
-  evidence: {
-    catalogEntryIds: string[];
-    ruleIds: string[];
-    filePaths: string[];
-  };
-}
-
-interface RefinedSystem {
-  systemId: string;
-  humanSummary: string;
-  riskNarrative: string;
-  mitigations: string[];
-  priorityScore: number;
-  gaps: string[];
-}
-
-interface ScanRefinement {
-  overallSummary: string;
-  topPriority: string;
-  systems: RefinedSystem[];
+  evidence: { catalogEntryIds: string[]; ruleIds: string[]; filePaths: string[] };
 }
 
 interface ScanResponse {
@@ -52,8 +42,9 @@ interface ScanResponse {
   };
   systems: AISystem[];
   unattributedFindings: Array<{ ruleId?: string; filePath: string; lineStart: number }>;
-  refinement: ScanRefinement | null;
-  refineError: string | null;
+  serviceProfile: ServiceProfile | null;
+  report: ComplianceReport | null;
+  reportError: string | null;
 }
 
 const RISK_BADGE: Record<string, string> = {
@@ -62,18 +53,30 @@ const RISK_BADGE: Record<string, string> = {
   low: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40",
 };
 
-const CONF_BADGE: Record<string, string> = {
-  high: "bg-emerald-500/15 text-emerald-300",
-  medium: "bg-amber-500/15 text-amber-300",
-  low: "bg-zinc-700/40 text-zinc-400",
+const APPLICABILITY_BADGE: Record<string, string> = {
+  applicable: "bg-red-500/15 text-red-300 border border-red-500/30",
+  conditional: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
+  not_applicable: "bg-zinc-700/40 text-zinc-400 border border-zinc-700",
 };
 
-const PRIORITY_BADGE: Record<number, { label: string; cls: string }> = {
-  1: { label: "P1 긴급", cls: "bg-red-500/20 text-red-300 border border-red-500/40" },
-  2: { label: "P2 높음", cls: "bg-orange-500/20 text-orange-300 border border-orange-500/40" },
-  3: { label: "P3 중간", cls: "bg-amber-500/20 text-amber-300 border border-amber-500/40" },
-  4: { label: "P4 낮음", cls: "bg-sky-500/20 text-sky-300 border border-sky-500/40" },
-  5: { label: "P5 여유", cls: "bg-zinc-700/40 text-zinc-300 border border-zinc-600" },
+const APPLICABILITY_LABEL: Record<string, string> = {
+  applicable: "적용",
+  conditional: "조건부",
+  not_applicable: "비적용",
+};
+
+const OWNER_LABEL: Record<string, string> = {
+  engineering: "엔지니어링",
+  legal: "법무",
+  product: "프로덕트",
+  security: "보안",
+  executive: "임원",
+};
+
+const EFFORT_LABEL: Record<string, string> = {
+  S: "S (<1주)",
+  M: "M (1~4주)",
+  L: "L (>4주)",
 };
 
 function overallRiskOf(systems: AISystem[]): "high" | "medium" | "low" | "none" {
@@ -83,26 +86,23 @@ function overallRiskOf(systems: AISystem[]): "high" | "medium" | "low" | "none" 
   return "low";
 }
 
-function uniqueObligations(systems: AISystem[]): string[] {
-  return [...new Set(systems.flatMap((s) => s.triggeredObligations))];
-}
-
 export default function ScanPage() {
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResponse | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
-  // 결과 도착 시 자동 저장
   useEffect(() => {
     if (!result) return;
-    saveEntry({
+    const saved = saveEntry({
       type: "scan",
       title: result.repoUrl,
-      overallRisk: overallRiskOf(result.systems),
+      overallRisk: result.report?.overallRisk ?? overallRiskOf(result.systems),
       systemCount: result.systems.length,
       payload: result,
     });
+    setSavedId(saved.id);
   }, [result]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -110,6 +110,7 @@ export default function ScanPage() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setSavedId(null);
     try {
       const res = await fetch("/api/scan", {
         method: "POST",
@@ -134,11 +135,11 @@ export default function ScanPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">코드 스캔</h1>
         <p className="text-sm text-zinc-400">
-          GitHub 저장소 코드 분석 → AI 시스템 식별 → AI기본법 의무 자동 매핑 + Gemini 서술 보강
+          GitHub 저장소 → AI 시스템 식별 → 서비스 프로파일링 → AI기본법 컴플라이언스 리포트
         </p>
       </header>
 
@@ -167,7 +168,7 @@ export default function ScanPage() {
           disabled={loading || repoUrl.length === 0}
           className="w-full rounded-lg bg-indigo-500 hover:bg-indigo-400 disabled:bg-zinc-700 disabled:text-zinc-400 px-4 py-3 font-medium transition"
         >
-          {loading ? "스캔 중… (수집 → 분석 → 합성 → Gemini 서술)" : "코드 스캔 실행"}
+          {loading ? "분석 중… (수집 → 합성 → 서비스 프로파일 → 컴플라이언스 리포트)" : "스캔 실행"}
         </button>
       </form>
 
@@ -178,43 +179,418 @@ export default function ScanPage() {
         </div>
       )}
 
-      {result && <ScanResultView result={result} />}
+      {result && <ScanResultView result={result} savedId={savedId} />}
     </main>
   );
 }
 
-export function ScanResultView({ result }: { result: ScanResponse }) {
-  const overall = overallRiskOf(result.systems);
-  const obligations = uniqueObligations(result.systems);
+export function ScanResultView({
+  result,
+  savedId,
+}: {
+  result: ScanResponse;
+  savedId?: string | null;
+}) {
+  if (result.report && result.serviceProfile) {
+    return (
+      <ComplianceReportView
+        repoUrl={result.repoUrl}
+        commitSha={result.commitSha}
+        profile={result.serviceProfile}
+        report={result.report}
+        systems={result.systems}
+        savedId={savedId}
+      />
+    );
+  }
+  // 폴백: 리포트 생성 실패 또는 GEMINI_API_KEY 미설정
+  return <BareSystemsView result={result} />;
+}
 
-  // refinement.systems를 systemId → RefinedSystem 으로 색인
-  const refineMap = useMemo(() => {
-    const m = new Map<string, RefinedSystem>();
-    if (result.refinement) {
-      for (const r of result.refinement.systems) m.set(r.systemId, r);
-    }
-    return m;
-  }, [result.refinement]);
-
-  // 정렬: priority desc → risk desc
-  const RISK_RANK = { high: 3, medium: 2, low: 1 } as const;
-  const sortedSystems = useMemo(() => {
-    return [...result.systems].sort((a, b) => {
-      const ap = refineMap.get(a.id)?.priorityScore ?? 99;
-      const bp = refineMap.get(b.id)?.priorityScore ?? 99;
-      if (ap !== bp) return ap - bp;
-      return RISK_RANK[b.derivedRiskTier] - RISK_RANK[a.derivedRiskTier];
-    });
-  }, [result.systems, refineMap]);
+function ComplianceReportView({
+  repoUrl,
+  commitSha,
+  profile,
+  report,
+  systems,
+  savedId,
+}: {
+  repoUrl: string;
+  commitSha: string;
+  profile: ServiceProfile;
+  report: ComplianceReport;
+  systems: AISystem[];
+  savedId?: string | null;
+}) {
+  const systemNameById = new Map(systems.map((s) => [s.id, s.name]));
 
   return (
     <section className="space-y-6">
-      {/* 상단 요약 배너 */}
+      {/* 인쇄/PDF 버튼 */}
+      {savedId && (
+        <div className="flex justify-end">
+          <Link
+            href={`/scan/print/${savedId}`}
+            target="_blank"
+            className="text-xs px-3 py-1.5 rounded border border-zinc-700 hover:bg-zinc-800 transition"
+          >
+            인쇄용 페이지 / PDF 다운로드 →
+          </Link>
+        </div>
+      )}
+
+      {/* Executive Summary */}
       <div className="rounded-xl border border-zinc-800 bg-gradient-to-br from-indigo-500/5 to-fuchsia-500/5 p-6">
-        <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <div className="text-xs text-zinc-500 mb-1">컴플라이언스 리포트</div>
+            <div className="text-sm text-zinc-300 break-words">
+              <code className="text-xs">{repoUrl}</code>{" "}
+              <span className="text-zinc-500">·</span>{" "}
+              <code className="text-xs">{commitSha.slice(0, 12)}</code>
+            </div>
+          </div>
+          <span className={`text-xs px-2 py-1 rounded shrink-0 ${RISK_BADGE[report.overallRisk]}`}>
+            전체 위험: {report.overallRisk.toUpperCase()}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-4">
+          <Stat label="서비스 도메인" value={profile.primaryDomain} />
+          <Stat label="검출 시스템" value={`${systems.length}개`} />
+          <Stat label="리스크 항목" value={`${report.riskRegister.length}개`} />
+          <Stat label="P1 긴급 액션" value={`${report.roadmap.p1_urgent.length}개`} />
+        </div>
+
+        <div className="border-t border-zinc-800 pt-4">
+          <div className="text-xs uppercase tracking-wider text-indigo-300 mb-2">
+            Executive Summary
+          </div>
+          <p className="text-sm text-zinc-100 leading-relaxed whitespace-pre-wrap">
+            {report.executiveSummary}
+          </p>
+        </div>
+      </div>
+
+      {/* Service Profile */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">서비스 프로파일</h2>
+        <p className="text-sm text-zinc-100 mb-3">{profile.servicePurpose}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-zinc-300">
+          <Pair k="사용자" v={profile.userTypes.join(", ")} />
+          <Pair k="도메인" v={profile.primaryDomain} />
+          <Pair k="데이터 민감도" v={profile.dataSensitivity} />
+          <Pair k="데이터 종류" v={profile.dataKinds.join(", ") || "-"} />
+          <Pair k="결정 자동화" v={profile.decisionAutomation} />
+          <Pair k="외부 노출" v={profile.customerExposure ? "예" : "아니오"} />
+        </div>
+        <details className="mt-3">
+          <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-200">
+            판단 근거
+          </summary>
+          <p className="text-xs text-zinc-300 mt-2 leading-relaxed">{profile.reasoning}</p>
+          {profile.evidenceFiles.length > 0 && (
+            <ul className="mt-2 font-mono text-[11px] text-zinc-500 space-y-0.5">
+              {profile.evidenceFiles.slice(0, 10).map((f) => (
+                <li key={f}>· {f}</li>
+              ))}
+            </ul>
+          )}
+        </details>
+      </div>
+
+      {/* Risk Register */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+          리스크 레지스터 ({report.riskRegister.length})
+        </h2>
+        <div className="space-y-2">
+          {report.riskRegister.map((r) => (
+            <RiskRow key={r.id} risk={r} systemNameById={systemNameById} />
+          ))}
+        </div>
+      </div>
+
+      {/* System Analyses */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+          시스템 분석 ({report.systemAnalyses.length})
+        </h2>
+        <div className="space-y-2">
+          {report.systemAnalyses.map((sa) => (
+            <SystemAnalysisRow
+              key={sa.systemId}
+              analysis={sa}
+              systemName={systemNameById.get(sa.systemId) ?? sa.systemId}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Obligation Deep Dive */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+          의무 심화 분석 ({report.obligationDeepDive.length}개 / 9개)
+        </h2>
+        <div className="space-y-2">
+          {report.obligationDeepDive.map((o) => (
+            <ObligationRow key={o.obligationId} item={o} systemNameById={systemNameById} />
+          ))}
+        </div>
+      </div>
+
+      {/* Roadmap */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">로드맵</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <RoadmapColumn title="P1 긴급 (30일)" tone="red" items={report.roadmap.p1_urgent} />
+          <RoadmapColumn
+            title="P2 중요 (90일, 시행일 전)"
+            tone="amber"
+            items={report.roadmap.p2_important}
+          />
+          <RoadmapColumn title="P3 계획 (분기)" tone="sky" items={report.roadmap.p3_planned} />
+        </div>
+      </div>
+
+      {/* Open Questions */}
+      {report.openQuestions.length > 0 && (
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+          <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+            정보 부족 / 인간 결정 필요 ({report.openQuestions.length})
+          </h2>
+          <ul className="space-y-2 text-sm text-zinc-200">
+            {report.openQuestions.map((q, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="text-zinc-500">Q{i + 1}.</span>
+                <span>{q}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function RiskRow({
+  risk,
+  systemNameById,
+}: {
+  risk: RiskItem;
+  systemNameById: Map<string, string>;
+}) {
+  const score = risk.severity * risk.likelihood;
+  const tone =
+    score >= 16
+      ? "border-red-500/40 bg-red-500/5"
+      : score >= 9
+        ? "border-amber-500/40 bg-amber-500/5"
+        : "border-zinc-700 bg-zinc-900/40";
+  return (
+    <details className={`rounded-lg border ${tone} p-3`}>
+      <summary className="cursor-pointer flex items-start gap-3 text-sm">
+        <div className="flex flex-col items-center shrink-0 w-12">
+          <div className="text-xs text-zinc-500">S×L</div>
+          <div className="text-base font-semibold">
+            {risk.severity}×{risk.likelihood}
+          </div>
+          <div className="text-[10px] text-zinc-500">={score}</div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-zinc-100">{risk.title}</div>
+          <div className="text-xs text-zinc-400 mt-0.5">
+            <span className="text-zinc-500">담당:</span> {OWNER_LABEL[risk.owner] ?? risk.owner}
+            {risk.affectedObligations.length > 0 && (
+              <>
+                <span className="text-zinc-600"> · </span>
+                <span className="text-zinc-500">의무:</span>{" "}
+                {risk.affectedObligations.join(", ")}
+              </>
+            )}
+          </div>
+        </div>
+      </summary>
+      <div className="mt-3 pl-15 space-y-2 text-xs text-zinc-300">
+        <div>
+          <span className="text-zinc-500 uppercase tracking-wider text-[10px]">영향: </span>
+          {risk.impact}
+        </div>
+        <div>
+          <span className="text-zinc-500 uppercase tracking-wider text-[10px]">완화: </span>
+          {risk.mitigation}
+        </div>
+        {risk.affectedSystemIds.length > 0 && (
           <div>
-            <div className="text-xs text-zinc-500 mb-1">스캔 요약</div>
-            <div className="text-sm text-zinc-300">
+            <span className="text-zinc-500 uppercase tracking-wider text-[10px]">시스템: </span>
+            {risk.affectedSystemIds.map((id) => systemNameById.get(id) ?? id).join(", ")}
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function SystemAnalysisRow({
+  analysis,
+  systemName,
+}: {
+  analysis: SystemAnalysis;
+  systemName: string;
+}) {
+  return (
+    <details className="rounded-lg border border-zinc-700 bg-zinc-900/40 p-3">
+      <summary className="cursor-pointer text-sm font-medium text-zinc-100">
+        {systemName}
+        <span className="text-xs text-zinc-500 ml-2">— {analysis.role}</span>
+      </summary>
+      <div className="mt-3 space-y-2 text-xs text-zinc-300">
+        <Block title="데이터 흐름">{analysis.dataFlow}</Block>
+        {analysis.crossSystemInteractions.length > 0 && (
+          <Block title="다른 시스템과의 상호작용">
+            <ul className="space-y-0.5 list-disc list-inside">
+              {analysis.crossSystemInteractions.map((c, i) => <li key={i}>{c}</li>)}
+            </ul>
+          </Block>
+        )}
+        <Block title="리스크 서술">{analysis.riskNarrative}</Block>
+        {analysis.mitigations.length > 0 && (
+          <Block title="완화 조치">
+            <ul className="space-y-0.5 list-disc list-inside">
+              {analysis.mitigations.map((m, i) => <li key={i}>{m}</li>)}
+            </ul>
+          </Block>
+        )}
+        {analysis.auditableArtifacts.length > 0 && (
+          <Block title="감사 산출물">
+            <ul className="space-y-0.5 list-disc list-inside">
+              {analysis.auditableArtifacts.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </Block>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function ObligationRow({
+  item,
+  systemNameById,
+}: {
+  item: ObligationDeepDive;
+  systemNameById: Map<string, string>;
+}) {
+  return (
+    <details className="rounded-lg border border-zinc-700 bg-zinc-900/40 p-3">
+      <summary className="cursor-pointer flex items-start gap-3 text-sm">
+        <span
+          className={`text-[10px] px-2 py-0.5 rounded shrink-0 ${APPLICABILITY_BADGE[item.applicability]}`}
+        >
+          {APPLICABILITY_LABEL[item.applicability]}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-zinc-100">{item.title}</div>
+          <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{item.obligationId}</div>
+        </div>
+      </summary>
+      <div className="mt-3 space-y-2 text-xs text-zinc-300">
+        <Block title="판단 근거">{item.rationale}</Block>
+        {item.triggeringSystems.length > 0 && (
+          <Block title="트리거 시스템">
+            {item.triggeringSystems.map((id) => systemNameById.get(id) ?? id).join(", ")}
+          </Block>
+        )}
+        {item.requiredEvidence.length > 0 && (
+          <Block title="필요 증거">
+            <ul className="space-y-0.5 list-disc list-inside">
+              {item.requiredEvidence.map((e, i) => <li key={i}>{e}</li>)}
+            </ul>
+          </Block>
+        )}
+        {item.immediateActions.length > 0 && (
+          <Block title="즉시 조치 (30일)">
+            <ul className="space-y-0.5 list-disc list-inside">
+              {item.immediateActions.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </Block>
+        )}
+        {item.longTermActions.length > 0 && (
+          <Block title="장기 조치 (90일+)">
+            <ul className="space-y-0.5 list-disc list-inside">
+              {item.longTermActions.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </Block>
+        )}
+        {item.blockers.length > 0 && (
+          <Block title="블로커">
+            <ul className="space-y-0.5 list-disc list-inside text-amber-300">
+              {item.blockers.map((b, i) => <li key={i}>{b}</li>)}
+            </ul>
+          </Block>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function RoadmapColumn({
+  title,
+  tone,
+  items,
+}: {
+  title: string;
+  tone: "red" | "amber" | "sky";
+  items: ActionItem[];
+}) {
+  const toneCls = {
+    red: "border-red-500/40 text-red-300",
+    amber: "border-amber-500/40 text-amber-300",
+    sky: "border-sky-500/40 text-sky-300",
+  }[tone];
+  return (
+    <div className={`rounded-lg border ${toneCls.split(" ")[0]} bg-zinc-950/40 p-3`}>
+      <h3 className={`text-xs uppercase tracking-wider mb-3 ${toneCls.split(" ")[1]}`}>
+        {title} · {items.length}건
+      </h3>
+      <ul className="space-y-2">
+        {items.length === 0 && (
+          <li className="text-xs text-zinc-500">(해당 항목 없음)</li>
+        )}
+        {items.map((a, i) => (
+          <li
+            key={i}
+            className="rounded border border-zinc-800 bg-zinc-900/60 p-2 text-xs text-zinc-200"
+          >
+            <div className="font-medium">{a.title}</div>
+            <div className="mt-1 flex flex-wrap gap-1 text-[10px]">
+              <span className="px-1.5 py-0.5 rounded bg-zinc-800">
+                {OWNER_LABEL[a.owner] ?? a.owner}
+              </span>
+              <span className="px-1.5 py-0.5 rounded bg-zinc-800">
+                {EFFORT_LABEL[a.effort]}
+              </span>
+              {a.relatedObligations.map((o) => (
+                <span key={o} className="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-200">
+                  {o}
+                </span>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function BareSystemsView({ result }: { result: ScanResponse }) {
+  const overall = overallRiskOf(result.systems);
+  return (
+    <section className="space-y-6">
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="min-w-0">
+            <div className="text-xs text-zinc-500 mb-1">스캔 결과 (리포트 미생성)</div>
+            <div className="text-sm text-zinc-300 break-words">
               <code className="text-xs">{result.repoUrl}</code>{" "}
               <span className="text-zinc-500">·</span>{" "}
               <code className="text-xs">{result.commitSha.slice(0, 12)}</code>
@@ -222,70 +598,46 @@ export function ScanResultView({ result }: { result: ScanResponse }) {
           </div>
           {overall !== "none" && (
             <span className={`text-xs px-2 py-1 rounded ${RISK_BADGE[overall]}`}>
-              전체 위험: {overall.toUpperCase()}
+              {overall.toUpperCase()}
             </span>
           )}
         </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-          <Stat label="검출 시스템" value={`${result.systems.length}개`} />
-          <Stat label="트리거 의무" value={`${obligations.length}개`} />
-          <Stat label="분석 파일" value={`${result.stats.totalFiles}개`} />
-          <Stat label="신호 (findings)" value={`${result.stats.totalFindings}개`} />
+        <div className="text-xs text-zinc-500">
+          {result.reportError
+            ? `Gemini 리포트 생성 실패: ${result.reportError}`
+            : "GEMINI_API_KEY 미설정 — 결정적 시스템 식별 결과만 표시."}
         </div>
-
-        {result.refinement && (
-          <div className="mt-4 pt-4 border-t border-zinc-800">
-            <div className="text-xs uppercase tracking-wider text-indigo-300 mb-2">
-              Gemini 종합 의견
-            </div>
-            <p className="text-sm text-zinc-200 leading-relaxed mb-2">
-              {result.refinement.overallSummary}
-            </p>
-            <div className="text-xs text-zinc-400">
-              <span className="text-zinc-500">최우선:</span>{" "}
-              {result.refinement.topPriority}
-            </div>
-          </div>
-        )}
-
-        {!result.refinement && result.refineError && (
-          <div className="mt-4 pt-4 border-t border-zinc-800 text-xs text-zinc-500">
-            Gemini 서술 보강 실패 — 결정적 분석 결과만 표시.
-          </div>
-        )}
-
-        {!result.refinement && !result.refineError && (
-          <div className="mt-4 pt-4 border-t border-zinc-800 text-xs text-zinc-500">
-            <code>GEMINI_API_KEY</code> 미설정 — 결정적 분석 결과만 표시.
-          </div>
-        )}
       </div>
-
-      {result.systems.length === 0 && (
-        <div className="rounded-xl border border-dashed border-zinc-700 p-8 text-center text-zinc-500">
-          검출된 AI 시스템이 없습니다.
-        </div>
-      )}
-
-      {sortedSystems.map((s) => (
-        <SystemCard key={s.id} system={s} refined={refineMap.get(s.id)} />
-      ))}
-
-      {result.unattributedFindings.length > 0 && (
-        <details className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-          <summary className="cursor-pointer text-sm text-zinc-300">
-            라이브러리 비매칭 코드 패턴 {result.unattributedFindings.length}개
-          </summary>
-          <ul className="mt-3 text-xs font-mono space-y-1 text-zinc-400">
-            {result.unattributedFindings.map((f, i) => (
-              <li key={i}>
-                [{f.ruleId}] {f.filePath}:{f.lineStart}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <h2 className="text-sm uppercase tracking-wider text-zinc-400 mb-3">
+          검출 시스템 ({result.systems.length})
+        </h2>
+        <ul className="space-y-2 text-sm">
+          {result.systems.map((s) => (
+            <li key={s.id} className="flex items-start gap-3 border-b border-zinc-800 pb-2">
+              <span className={`text-[10px] px-2 py-0.5 rounded shrink-0 ${RISK_BADGE[s.derivedRiskTier]}`}>
+                {s.derivedRiskTier}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium">{s.name}</div>
+                <div className="text-xs text-zinc-400">{s.purpose}</div>
+                {s.triggeredObligations.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {s.triggeredObligations.map((o) => (
+                      <span
+                        key={o}
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-200"
+                      >
+                        {o}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
@@ -294,136 +646,8 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-xs text-zinc-500 mb-0.5">{label}</div>
-      <div className="text-lg font-semibold text-zinc-100">{value}</div>
+      <div className="text-lg font-semibold text-zinc-100 truncate">{value}</div>
     </div>
-  );
-}
-
-function SystemCard({
-  system: s,
-  refined,
-}: {
-  system: AISystem;
-  refined?: RefinedSystem;
-}) {
-  const priorityBadge = refined
-    ? PRIORITY_BADGE[Math.min(5, Math.max(1, refined.priorityScore)) as 1 | 2 | 3 | 4 | 5]
-    : null;
-
-  return (
-    <article className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-5">
-      <header className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
-          <div className="text-xs text-zinc-500">{s.catalogEntryId}</div>
-          <div className="font-semibold text-lg break-words">{s.name}</div>
-          {refined ? (
-            <p className="text-sm text-zinc-200 leading-relaxed mt-1">
-              {refined.humanSummary}
-            </p>
-          ) : (
-            <div className="text-sm text-zinc-400 mt-1">{s.purpose}</div>
-          )}
-        </div>
-        <div className="flex flex-col gap-1.5 shrink-0 items-end">
-          <span className={`text-[10px] px-2 py-0.5 rounded ${RISK_BADGE[s.derivedRiskTier]}`}>
-            위험: {s.derivedRiskTier.toUpperCase()}
-          </span>
-          {priorityBadge && (
-            <span className={`text-[10px] px-2 py-0.5 rounded ${priorityBadge.cls}`}>
-              {priorityBadge.label}
-            </span>
-          )}
-          <span className={`text-[10px] px-2 py-0.5 rounded ${CONF_BADGE[s.confidence]}`}>
-            신뢰: {s.confidence}
-          </span>
-        </div>
-      </header>
-
-      {refined && (
-        <details className="mt-3 group" open>
-          <summary className="cursor-pointer text-xs uppercase tracking-wider text-amber-300 hover:text-amber-200 select-none">
-            왜 이 등급인가?
-          </summary>
-          <p className="text-sm text-zinc-300 leading-relaxed mt-2 pl-3 border-l-2 border-amber-500/30">
-            {refined.riskNarrative}
-          </p>
-        </details>
-      )}
-
-      {refined && refined.mitigations.length > 0 && (
-        <details className="mt-3" open>
-          <summary className="cursor-pointer text-xs uppercase tracking-wider text-emerald-300 hover:text-emerald-200 select-none">
-            지금 해야 할 일 ({refined.mitigations.length}개)
-          </summary>
-          <ul className="mt-2 space-y-1 pl-3 border-l-2 border-emerald-500/30">
-            {refined.mitigations.map((m, i) => (
-              <li key={i} className="text-sm text-zinc-200 flex gap-2">
-                <input type="checkbox" className="mt-1" />
-                <span>{m}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
-
-      {refined && refined.gaps.length > 0 && (
-        <details className="mt-3">
-          <summary className="cursor-pointer text-xs uppercase tracking-wider text-sky-300 hover:text-sky-200 select-none">
-            정보 부족 / 추가 확인 필요 ({refined.gaps.length}개)
-          </summary>
-          <ul className="mt-2 space-y-1 pl-3 border-l-2 border-sky-500/30 text-sm text-zinc-300">
-            {refined.gaps.map((g, i) => (
-              <li key={i}>· {g}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-
-      <details className="mt-3">
-        <summary className="cursor-pointer text-xs uppercase tracking-wider text-indigo-300 hover:text-indigo-200 select-none">
-          트리거된 의무 ({s.triggeredObligations.length}개)
-        </summary>
-        <div className="flex flex-wrap gap-1 mt-2 pl-3 border-l-2 border-indigo-500/30">
-          {s.triggeredObligations.map((o) => (
-            <span
-              key={o}
-              className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-200"
-            >
-              {o}
-            </span>
-          ))}
-        </div>
-      </details>
-
-      <details className="mt-3">
-        <summary className="cursor-pointer text-xs uppercase tracking-wider text-zinc-400 hover:text-zinc-200 select-none">
-          기술 메타데이터
-        </summary>
-        <div className="grid grid-cols-2 gap-2 text-xs text-zinc-300 mt-2 pl-3 border-l-2 border-zinc-700">
-          <Pair k="조달" v={s.procurement} />
-          <Pair k="공급사" v={s.modelProvider} />
-          {s.modelName && <Pair k="모델" v={s.modelName} />}
-          <Pair k="해외모델" v={s.isForeignModel ? "예" : "아니오"} />
-          <Pair k="도메인" v={s.domains.join(", ") || "general"} />
-          <Pair k="모달리티" v={s.modalities.join(", ") || "-"} />
-          <Pair k="생성형" v={s.isGenerative ? "예" : "아니오"} />
-          <Pair k="자체학습" v={s.trainsOrFineTunes ? "예" : "아니오"} />
-        </div>
-      </details>
-
-      {s.evidence.filePaths.length > 0 && (
-        <details className="mt-3">
-          <summary className="cursor-pointer text-xs uppercase tracking-wider text-zinc-400 hover:text-zinc-200 select-none">
-            근거 파일 {s.evidence.filePaths.length}개
-          </summary>
-          <ul className="mt-2 pl-3 border-l-2 border-zinc-700 space-y-0.5 font-mono text-xs text-zinc-400">
-            {s.evidence.filePaths.slice(0, 30).map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-    </article>
   );
 }
 
@@ -431,6 +655,15 @@ function Pair({ k, v }: { k: string; v: string }) {
   return (
     <div>
       <span className="text-zinc-500">{k}:</span> {v}
+    </div>
+  );
+}
+
+function Block({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1">{title}</div>
+      <div className="text-zinc-200">{children}</div>
     </div>
   );
 }

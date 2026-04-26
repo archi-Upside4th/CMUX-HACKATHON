@@ -95,8 +95,11 @@ export default function HistoryDetailPage() {
       </header>
 
       {entry.type === "scan" ? (
-        // ScanResultView 재사용
-        <ScanResultView result={entry.payload as Parameters<typeof ScanResultView>[0]["result"]} />
+        // ScanResultView 재사용 (savedId 전달 시 인쇄 버튼 노출)
+        <ScanResultView
+          result={entry.payload as Parameters<typeof ScanResultView>[0]["result"]}
+          savedId={entry.id}
+        />
       ) : (
         <DiagnoseDetail
           payload={
