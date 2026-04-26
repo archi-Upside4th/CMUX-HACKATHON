@@ -6,9 +6,11 @@
  *        + obligation deep-dive + roadmap + open questions)
  */
 import { Type } from "@google/genai";
+import { z } from "zod";
 import { withGemini, DIAGNOSIS_MODEL } from "./client";
 import {
   ComplianceReportSchema,
+  ObligationDeepDiveSchema,
   type ComplianceReport,
   type RepoContext,
   type ServiceProfile,
@@ -23,6 +25,9 @@ import {
 } from "@/lib/laws/ai-basic-act";
 
 const ownerEnum = ["engineering", "legal", "product", "security", "executive"];
+const REPORT_ATTEMPTS = 2;
+const RETRYABLE_REPORT_ERROR =
+  /json|unterminated|unexpected end|schema|응답이 비어/i;
 
 const responseSchema = {
   type: Type.OBJECT,
@@ -241,6 +246,113 @@ const SYSTEM_INSTRUCTION = `당신은 한국 AI기본법(2026.1.22 시행) 컴�
 
 모든 출력은 한국어.`;
 
+const RawReportCitationSchema = z.object({
+  text: z.string(),
+});
+
+const RawObligationDeepDiveSchema = ObligationDeepDiveSchema.omit({
+  citations: true,
+  verified: true,
+  unsupportedRefs: true,
+}).extend({
+  citations: z.array(RawReportCitationSchema).default([]),
+});
+
+const RawComplianceReportSchema = ComplianceReportSchema.omit({
+  obligationDeepDive: true,
+}).extend({
+  obligationDeepDive: z.array(RawObligationDeepDiveSchema),
+});
+
+type RawComplianceReport = z.infer<typeof RawComplianceReportSchema>;
+
+function responseTextCandidates(text: string): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+
+  const candidates = new Set<string>([trimmed]);
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
+  if (fenced) candidates.add(fenced);
+
+  const firstBrace = trimmed.indexOf("{");
+  const lastBrace = trimmed.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    candidates.add(trimmed.slice(firstBrace, lastBrace + 1).trim());
+  }
+
+  return [...candidates];
+}
+
+function toComplianceReportError(error: unknown): Error {
+  if (error instanceof z.ZodError) {
+    return new Error(`ComplianceReport 스키마 검증 실패: ${error.message}`);
+  }
+  if (error instanceof Error) {
+    return new Error(`ComplianceReport JSON 파싱 실패: ${error.message}`);
+  }
+  return new Error(`ComplianceReport JSON 파싱 실패: ${String(error)}`);
+}
+
+function verifyComplianceReport(
+  raw: RawComplianceReport
+): ComplianceReport {
+  const verifiedDeepDive = [];
+  for (const o of raw.obligationDeepDive) {
+    if (!isKnownObligationId(o.obligationId)) {
+      console.warn(
+        `[compliance-report] dropped obligation with unknown id: ${o.obligationId}`
+      );
+      continue;
+    }
+    const checked = (o.citations ?? []).map((c) => {
+      const r = verifyCitation(o.obligationId, c.text);
+      return { text: c.text, verifiedLocator: r.ok ? r.locator : null };
+    });
+    const hasVerifiedCitation = checked.some(
+      (c) => c.verifiedLocator !== null
+    );
+    const unsupportedRefs = unsupportedArticleRefs(
+      o.obligationId,
+      o.rationale ?? "",
+      ...(o.immediateActions ?? []),
+      ...(o.longTermActions ?? []),
+      ...(o.requiredEvidence ?? [])
+    );
+    verifiedDeepDive.push({
+      ...o,
+      citations: checked,
+      verified: hasVerifiedCitation && unsupportedRefs.length === 0,
+      unsupportedRefs,
+    });
+  }
+
+  return { ...raw, obligationDeepDive: verifiedDeepDive };
+}
+
+export function parseComplianceReportResponse(text: string): ComplianceReport {
+  const candidates = responseTextCandidates(text);
+  if (candidates.length === 0) {
+    throw new Error("ComplianceReport Gemini 응답이 비어 있습니다.");
+  }
+
+  let lastErr: unknown = null;
+  for (const candidate of candidates) {
+    try {
+      const raw = RawComplianceReportSchema.parse(JSON.parse(candidate));
+      return verifyComplianceReport(raw);
+    } catch (error) {
+      lastErr = error;
+    }
+  }
+
+  throw toComplianceReportError(lastErr);
+}
+
+function shouldRetryComplianceReport(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return RETRYABLE_REPORT_ERROR.test(message);
+}
+
 interface Input {
   repoUrl: string;
   serviceProfile: ServiceProfile;
@@ -301,60 +413,36 @@ JSON 스키마에 맞춰 ComplianceReport 출력.
 - obligationDeepDive는 9개 의무 모두 포함 (not_applicable이라도).
 - riskRegister는 우선순위 높은 것부터.`;
 
-  const response = await withGemini((ai) =>
-    ai.models.generateContent({
-      model: DIAGNOSIS_MODEL,
-      contents: userPrompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema,
-        temperature: 0.25,
-        maxOutputTokens: 16_000,
-      },
-    })
-  );
-
-  const text = response.text;
-  if (!text)
-    throw new Error("ComplianceReport Gemini 응답이 비어 있습니다.");
-
-  const parsed = ComplianceReportSchema.safeParse(JSON.parse(text));
-  if (!parsed.success) {
-    throw new Error(
-      `ComplianceReport 스키마 검증 실패: ${parsed.error.message}`
-    );
-  }
-
-  const verifiedDeepDive = [];
-  for (const o of parsed.data.obligationDeepDive) {
-    if (!isKnownObligationId(o.obligationId)) {
-      console.warn(
-        `[compliance-report] dropped obligation with unknown id: ${o.obligationId}`
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= REPORT_ATTEMPTS; attempt++) {
+    try {
+      const response = await withGemini((ai) =>
+        ai.models.generateContent({
+          model: DIAGNOSIS_MODEL,
+          contents: userPrompt,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            responseMimeType: "application/json",
+            responseSchema,
+            temperature: 0.25,
+            maxOutputTokens: 20_000,
+          },
+        })
       );
-      continue;
+
+      return parseComplianceReportResponse(response.text ?? "");
+    } catch (error) {
+      lastError = error;
+      if (attempt === REPORT_ATTEMPTS || !shouldRetryComplianceReport(error)) {
+        throw error;
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `[compliance-report] attempt ${attempt} failed (${message.slice(0, 160)}), retrying`
+      );
     }
-    const checked = (o.citations ?? []).map((c) => {
-      const r = verifyCitation(o.obligationId, c.text);
-      return { text: c.text, verifiedLocator: r.ok ? r.locator : null };
-    });
-    const hasVerifiedCitation = checked.some(
-      (c) => c.verifiedLocator !== null
-    );
-    const unsupportedRefs = unsupportedArticleRefs(
-      o.obligationId,
-      o.rationale ?? "",
-      ...(o.immediateActions ?? []),
-      ...(o.longTermActions ?? []),
-      ...(o.requiredEvidence ?? [])
-    );
-    verifiedDeepDive.push({
-      ...o,
-      citations: checked,
-      verified: hasVerifiedCitation && unsupportedRefs.length === 0,
-      unsupportedRefs,
-    });
   }
 
-  return { ...parsed.data, obligationDeepDive: verifiedDeepDive };
+  throw lastError ?? new Error("ComplianceReport 생성 실패");
 }

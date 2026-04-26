@@ -1,272 +1,139 @@
-# LexOS — AI기본법 컴플라이언스 자동화
+# AI 기본법 검증 SaaS 서비스
 
-> 한국 AI기본법(2026.1.22 시행)의 9개 의무를, **회사 프로필** 또는 **GitHub 저장소 URL** 한 줄로 자동 매핑하는 B2B SaaS MVP.
+「AI 기본법 검증 SaaS 서비스」는 서비스 정보 입력과 코드 저장소 분석만으로 적용 가능한 법적 의무와 리스크를 진단해 주는 AI 컴플라이언스 자동화 도구입니다.
 
-법무팀이 일일이 체크리스트를 돌리는 대신, LexOS가 ① 코드를 정적 분석해서 어떤 AI 시스템을 쓰는지 식별하고 ② 위험등급(high/medium/low)을 결정하고 ③ 트리거되는 의무를 자동으로 붙여줍니다.
+## 📌 목차 (Table of Contents)
+- [개요](#개요)
+- [기술 스택](#기술-스택)
+- [설치 및 실행 방법](#설치-및-실행-방법)
+- [폴더 구조](#폴더-구조)
+- [기여 방법](#기여-방법)
+- [라이선스](#라이선스)
 
----
+## 📖 개요
+「AI 기본법 검증 SaaS 서비스」는 2026년 시행된 「인공지능 발전과 신뢰 기반 조성 등에 관한 기본법」에 대응해, 법무 인력이 부족한 조직이 자사 서비스의 법적 리스크를 스스로 진단할 수 있도록 돕는 컴플라이언스 자동화 도구입니다. 법무팀이나 서비스 운영팀이 AI 시스템별 의무 사항을 일일이 수작업으로 점검하는 대신, 회사 정보 또는 코드 저장소를 입력하면 관련 의무와 위험도를 빠르게 파악할 수 있도록 설계했습니다.
 
-## 빠른 시작
+사용자가 서비스 정보를 입력하면 적용 가능한 의무 조항을 자동으로 매칭하고, 각 조항이 왜 트리거되었는지와 어떤 지점에서 저촉 가능성이 있는지를 비전문가도 이해할 수 있는 언어로 설명합니다. 또한 진단 결과를 실무에서 바로 활용할 수 있는 공식 보고서 형식으로 정리할 수 있어, 초기 대응 자료나 내부 검토 문서로도 연결하기 쉽습니다.
 
-### 0. 사전 요구사항
-- Node.js 20+ (개발은 Node 25 + Turbopack)
-- `git` (저장소 스캔용 — 시스템 git 바이너리 사용)
-- Gemini API 키 (회사 프로필 진단에 사용)
+이 서비스는 두 가지 방식으로 문제를 해결합니다. 첫째, 회사 프로필 기반 진단을 통해 조직이 어떤 형태로 AI를 활용하는지 입력받아 9개 의무의 적용 가능성을 정리합니다. 둘째, GitHub 저장소를 정적 분석해 사용 중인 AI 라이브러리와 서비스 패턴을 탐지하고, 위험 등급과 컴플라이언스 포인트를 자동으로 매핑합니다. 여기에 출처 기반 설명과 요약을 더해 비기술자도 결과를 이해하기 쉽게 제공합니다.
 
-### 1. 설치 & 실행
+특히 법률 도메인에서는 답변의 정확성과 근거가 매우 중요하기 때문에, AI 기본법 원문과 해설 자료를 바탕으로 한 RAG 구조를 통해 검증된 출처 기반으로만 응답하도록 설계했습니다. 이를 통해 사용자는 단순한 추정이 아니라, 확인 가능한 근거와 함께 컴플라이언스 판단을 검토할 수 있습니다.
+
+### 어떤 문제를 해결하나요?
+AI 기본법 시행 이후에도 법무 인력이 부족한 스타트업과 소규모 조직은 자사 서비스에 어떤 법적 의무가 적용되는지 정확히 파악하기 어렵습니다. 그 결과 의도치 않게 법을 위반하거나, 반대로 불확실성을 이유로 서비스를 과도하게 축소하는 컴플라이언스 사각지대가 발생합니다. 이 서비스는 그 사각지대를 줄여, 비전문 조직도 스스로 적용 의무와 리스크를 빠르게 점검할 수 있도록 돕습니다.
+
+주요 기능은 아래와 같습니다.
+- 회사 프로필 기반 AI 기본법 진단
+- GitHub 저장소 URL 기반 AI 사용 현황 스캔
+- AI 시스템별 위험 등급 및 적용 의무 매핑
+- 트리거 사유와 잠재 저촉 포인트를 쉬운 언어로 설명
+- 스캔/진단 결과 대시보드 및 브라우저 로컬 이력 관리
+- 공식 보고서 형식의 컴플라이언스 리포트 생성
+- RAG 기반 출처 검증형 응답 지원
+
+> 스크린샷 또는 데모 GIF는 추후 추가 예정입니다.
+
+## 🛠 기술 스택
+### Frontend
+- Next.js 16.2.4
+- React 19
+- Tailwind CSS 4
+- TypeScript
+
+### Backend
+- Next.js Route Handlers
+- Node.js
+
+### AI / Validation / Data
+- Google Gemini (`@google/genai`)
+- Zod
+- YAML 기반 AI 라이브러리 카탈로그
+- Browser `localStorage` 기반 이력 저장
+
+## 🚀 설치 및 실행 방법
+### 1. 저장소 클론
 ```bash
-git clone git@github.com:archi-Upside4th/CMUX-HACKATHON.git
+git clone [저장소_URL]
 cd CMUX-HACKATHON
+```
+
+### 2. 패키지 설치
+```bash
 npm install
+```
 
-# 환경변수
-cat > .env <<'EOF'
-GEMINI_API_KEY=<발급받은_키>
+### 3. 환경 변수 설정
+`README` 기준 주요 환경 변수는 아래와 같습니다.
+
+```bash
+cat > .env.local <<'EOF'
+GEMINI_API_KEY=your_gemini_api_key
 EOF
+```
 
+- `GEMINI_API_KEY`가 있으면 회사 진단 기능과 스캔 결과 요약/리포트 생성 기능을 사용할 수 있습니다.
+- 키가 없어도 일부 저장소 스캔의 결정적 분석 결과는 동작하지만, Gemini 기반 보강 설명은 비활성화됩니다.
+
+### 4. 개발 서버 실행
+```bash
 npm run dev
-# → http://localhost:3000
 ```
 
-### 2. 첫 사용
-`http://localhost:3000/dashboard`로 접속하면 두 진입점(스캔 / 진단) 카드 + 최근 이력이 한눈에 보입니다. 상단 네비에서 언제든 이동 가능.
+브라우저에서 아래 주소로 접속합니다.
 
-- **대시보드** — `/dashboard` — 최근 스캔/진단 이력 + 빠른 진입
-- **회사 프로필 진단** — `/` — 폼에 회사 정보 입력 (Gemini 기반)
-- **코드 스캔** — `/scan` — GitHub URL 한 줄 입력 (정적 분석 + Gemini 서술 보강)
-
----
-
-## 세 가지 진입점
-
-### A. `/dashboard` — 대시보드
-- 최근 스캔/진단 이력 (브라우저 localStorage 저장 — 최신 50건)
-- KPI: 총 이력 / 스캔 수 / 진단 수 / HIGH 위험 건수
-- 카드 클릭 → 저장된 결과 그대로 재표시 (`/dashboard/{id}`)
-- 필터: 전체 / 스캔 / 진단
-
-> 저장은 브라우저 로컬에서만. 다른 기기/브라우저와 공유 안 됨. 추후 DB 백엔드 추가 예정.
-
-### B. `/` — 회사 프로필 진단 (Gemini 기반)
-회사가 어떤 AI를 어떻게 쓰는지 자연어로 입력하면 Gemini 2.5 Flash가 의무를 매핑합니다.
-
-- **입력**: 회사명, 산업, AI 사용 목적, 모델 종류, 데이터 종류 등 (폼 항목)
-- **출력**: 9개 의무별 적용 여부 + 근거 + 권장 액션
-- **API**: `POST /api/diagnose` — 본문 스키마는 `src/lib/types.ts`의 `CompanyProfileSchema` 참조
-
-### C. `/scan` — GitHub 저장소 코드 스캔 (정적 분석 + Gemini 서술)
-저장소 URL만 주면 자동 스캔 → AI 시스템 식별 → 의무 매핑 → Gemini가 비기술자용 서술 보강.
-
-#### 사용법
-1. `/scan` 페이지에서 GitHub URL 입력 (예: `https://github.com/openai/openai-quickstart-python`)
-2. "코드 스캔 실행" 클릭
-3. 결과: 검출된 AI 시스템 카드 + 위험등급 + 트리거된 의무 + 근거 파일
-
-#### 허용되는 URL
-- `https://` 스킴만 (ssh URL 거부)
-- 호스트 화이트리스트: `github.com`, `gitlab.com`, `bitbucket.org`, `codeberg.org`
-- 깊이 1 클론, 단일 blob ≤ 10MB
-
-#### 응답 (`POST /api/scan` JSON)
-```jsonc
-{
-  "ok": true,
-  "repoUrl": "https://github.com/...",
-  "commitSha": "ec8890d101bd...",
-  "stats": {
-    "totalFiles": 7,
-    "languageStats": {"python": 5, "typescript": 2},
-    "totalFindings": 12
-  },
-  "systems": [
-    {
-      "id": "synth-ab12cd34ef",
-      "catalogEntryId": "py.openai",
-      "name": "OpenAI Python SDK (gpt-4o)",
-      "purpose": "chat 모듈에서 OpenAI Python SDK 사용",
-      "procurement": "third_party_api",
-      "modelProvider": "OpenAI",
-      "modelName": "gpt-4o",
-      "isForeignModel": true,
-      "domains": ["general"],
-      "modalities": ["text"],
-      "isGenerative": true,
-      "trainsOrFineTunes": false,
-      "derivedRiskTier": "medium",
-      "triggeredObligations": [
-        "AIBA-NOTICE", "AIBA-RISK-MGMT", "AIBA-FOREIGN-REP"
-      ],
-      "confidence": "high",
-      "evidence": {
-        "catalogEntryIds": ["py.openai"],
-        "ruleIds": [],
-        "filePaths": ["src/chat.py", "requirements.txt"]
-      }
-    }
-  ],
-  "unattributedFindings": [
-    { "ruleId": "pattern.threshold_decision", "filePath": "...", "lineStart": 42 }
-  ],
-  "refinement": {
-    "overallSummary": "이 저장소는 OpenAI 외부 LLM에 의존하는 ...",
-    "topPriority": "synth-ab12cd34ef (OpenAI Python SDK) — 외부 생성형 AI ...",
-    "systems": [
-      {
-        "systemId": "synth-ab12cd34ef",
-        "humanSummary": "이 시스템은 사용자 질문에 자연어로 답하는 챗봇 ...",
-        "riskNarrative": "외부 OpenAI 모델을 사용하므로 ... 부정확/편향 답변 시 분쟁 가능.",
-        "mitigations": ["AI 사용 사실을 이용자에게 명확히 고지하십시오 ...", "..."],
-        "priorityScore": 2,
-        "gaps": ["워터마크 적용 여부 확인 필요", "..."]
-      }
-    ]
-  },
-  "refineError": null
-}
+```text
+http://localhost:3000
 ```
 
-> `refinement`는 `GEMINI_API_KEY`가 설정된 경우에만 채워집니다. 키가 없거나 호출 실패 시 `null`이며 결정적 결과(`systems`)는 그대로 반환됩니다.
-
----
-
-## 결과 해석
-
-### 위험등급 (`derivedRiskTier`)
-| 등급 | 트리거 조건 | 의미 |
-|---|---|---|
-| `high` | 고영향 도메인 + (완전자동 또는 비생성형) | 영향평가/공시 의무 추가 |
-| `medium` | 생성형 AI | 고지/위험관리/(해외 시) 대리인 |
-| `low` | 그 외 | 위험관리만 |
-
-**고영향 도메인**: `credit_finance`, `employment`, `healthcare`, `biometric_id`, `law_enforcement`
-
-### 9개 의무 (`triggeredObligations`)
-| ID | 한국어 | 자동 트리거 시점 |
-|---|---|---|
-| `AIBA-NOTICE` | AI 사용 고지 | 모든 생성형 AI |
-| `AIBA-RISK-MGMT` | 위험관리체계 구축 | 모든 시스템 |
-| `AIBA-FOREIGN-REP` | 국내 대리인 지정 | `isForeignModel: true` 시 |
-| `AIBA-WATERMARK` | 생성물 워터마크 | 이미지 생성 호출 검출 시 |
-| `AIBA-DATA-GOVERNANCE` | 학습데이터 거버넌스 | 학습/파인튜닝 코드 검출 시 (PEFT/TRL/Accelerate 등) |
-| `AIBA-HIGH-IMPACT` | 고영향 AI 등록 | high tier 도달 시 |
-| `AIBA-IMPACT-ASSESSMENT` | 영향평가 수행 | high tier 도달 시 |
-| `AIBA-PUBLIC-DISCLOSURE` | 공개공시 | high tier 도달 시 |
-| `AIBA-HIGH-COMPUTE` | 대규모 컴퓨팅 신고 | (현재 자동 트리거 없음, 카탈로그에서 수동 표시) |
-
-상세는 [src/lib/laws/ai-basic-act.ts](src/lib/laws/ai-basic-act.ts) 참조.
-
-### 신뢰도 (`confidence`)
-- `high` — 매니페스트 의존성 + import + 실제 호출 모두 일치
-- `medium` — import만 있고 호출 없음, 또는 매니페스트만 있음
-- `low` — 단순 의존성 선언만 (dead code 가능성)
-
-### `isForeignModel` 자동 보정
-한국 모델 prefix는 자동으로 `false`로 보정됩니다 → `AIBA-FOREIGN-REP` 미적용.
-- `upstage/`, `solar-`, `lgai-exaone/`, `exaone-`, `naver/`, `kt-`, `hcx-`
-
----
-
-## 카탈로그 — 40개 라이브러리 커버
-
-`src/lib/scan/catalog/entries/` 아래 YAML로 외부화. 빌드 시 Zod 검증.
-
-### 현재 커버
-| 카테고리 | 엔트리 |
-|---|---|
-| Python LLM API | openai, anthropic, google_generativeai, mistralai, cohere, groq, together, replicate, vertexai |
-| Python 프레임워크 | langchain, llama_index, transformers, diffusers |
-| Python 학습/파인튜닝 | peft, trl, accelerate, sentence_transformers, vllm |
-| Python 비전 | ultralytics, easyocr, mediapipe, face_recognition |
-| Python 전통 ML | xgboost, lightgbm, sklearn, spacy |
-| Python 로컬 런타임 | ollama |
-| TypeScript LLM | openai, vercel_ai, langchain, llamaindex, ollama, anthropic-sdk, google-genai, cohere-ai, aws-bedrock, huggingface-inference, xenova-transformers |
-| 한국 모델 | hyperclova (CLOVA Studio), upstage_solar |
-
-### 새 엔트리 추가
-1. `src/lib/scan/catalog/entries/<eco>/<name>.yaml` 생성
-2. 스키마: [src/lib/scan/catalog/schema.ts](src/lib/scan/catalog/schema.ts)의 `CatalogEntrySchema`
-3. 필수 필드: `id` (`{eco}.{name}` 형식), `name`, `nameKo`, `category`, `patterns`, `inferences`, `confidence`, `descriptionKo`, `addedAt`
-4. 서버 재시작 (모듈 캐시 갱신)
-
-예시는 [src/lib/scan/catalog/entries/python/openai.yaml](src/lib/scan/catalog/entries/python/openai.yaml) 참조.
-
-### 코드 패턴 룰 (12개)
-카탈로그와 별개로 `src/lib/scan/rules/code-patterns.ts`에 정의된 패턴 룰. 도메인 키워드(credit/HR/medical), 파인튜닝 루프, 임계치 결정, 워터마크 누락 등을 검출해 추가 의무를 트리거.
-
----
-
-## 보안 모델
-
-저장소 스캔은 임의의 외부 코드를 다루므로 다음 방어막을 적용:
-
-- **호스트 화이트리스트** (`src/lib/scan/collector/sandbox.ts`): github/gitlab/bitbucket/codeberg만 허용. 다른 호스트는 즉시 거부.
-- **owner/repo 정규식 검증**: `^[A-Za-z0-9._-]+$`
-- **격리된 임시 디렉토리** (`mkdtemp`): 스캔 후 항상 cleanup. 부모 파일시스템 접근 불가.
-- **git 보안 옵션**:
-  - `core.hooksPath=/dev/null` — 클론 시 hooks 자동 실행 차단
-  - `protocol.file.allow=never` — file:// 서브모듈 차단
-  - `--filter=blob:limit=10m` — 큰 blob 클론 안 함
-  - `--depth=1 --no-tags --single-branch`
-- **심볼릭 링크 거부**: 워크 도중 심링크 발견 시 스킵
-- **제외 디렉토리**: `node_modules`, `vendor`, `.venv`, `dist`, `build` 등은 처음부터 무시
-- **테스트 파일 신호 강등**: `**/test/**`, `**/tests/**`, `*.test.*`, `*.spec.*`는 별도 분류 → 시스템 검출 가중치 낮춤
-
-스캔 결과는 디스크에 저장하지 않습니다 (현재 MVP). API 응답으로만 반환.
-
----
-
-## 환경변수
-
-| 변수 | 필수 | 용도 |
-|---|---|---|
-| `GEMINI_API_KEY` | `/diagnose` 필수, `/scan`에선 옵션 | Google AI Studio API 키 |
-
-`/scan`은 키가 없어도 결정적 분석 결과는 반환합니다 (Gemini 서술 보강만 생략, `refinement: null`).
-
----
-
-## 알려진 제약
-
-- **Regex 기반 분석기** — AST 분석 미지원. import 별칭 / 동적 호출 일부 누락. (Phase 1.5.6 tree-sitter 통합 예정)
-- **`AIBA-HIGH-COMPUTE` 자동 트리거 미구현** — FLOPS/파라미터 수 추정 로직이 없어 카탈로그 명시 시에만 활성화.
-- **단일 커밋 스캔** — depth=1. 히스토리 기반 분석 (예: 시간에 따른 위험 변화) 불가.
-- **이력 저장은 브라우저 로컬** — `/dashboard`의 이력은 localStorage에만 보존. 다른 기기/브라우저로 이동 시 새로 시작. 50건 초과 시 오래된 항목 자동 폐기.
-- **Gemini refine은 상위 10개 시스템만** — 토큰 절약을 위해 11번째 이후 시스템은 결정적 결과만 노출.
-
----
-
-## 파일 구조
-
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── diagnose/route.ts    # POST 회사 프로필 진단
-│   │   └── scan/route.ts        # POST 코드 스캔 (synthesizer + Gemini refine)
-│   ├── page.tsx                 # / — 회사 프로필 폼
-│   ├── scan/page.tsx            # /scan — 코드 스캔 UI (refinement 카드)
-│   ├── dashboard/page.tsx       # /dashboard — 이력 카드 + KPI
-│   ├── dashboard/[id]/page.tsx  # /dashboard/{id} — 저장된 결과 재표시
-│   └── layout.tsx               # 상단 네비 (대시보드/스캔/진단)
-└── lib/
-    ├── gemini/
-    │   ├── client.ts            # GoogleGenAI 래퍼
-    │   ├── diagnose.ts          # /diagnose 프롬프트
-    │   └── refine-scan.ts       # /scan용 Gemini 서술 보강 (humanSummary/risk/mitigations/priority/gaps)
-    ├── laws/ai-basic-act.ts     # 9개 의무 정의 (한국어)
-    ├── storage/history.ts       # localStorage 이력 저장 추상화
-    ├── types.ts                 # CompanyProfile Zod 스키마
-    └── scan/
-        ├── catalog/             # 40개 YAML 엔트리 + loader
-        ├── collector/           # 샌드박스 git clone
-        ├── analyzer/            # manifest + source + glob 분석
-        ├── rules/code-patterns.ts  # 12개 코드 패턴 룰
-        ├── inputs/finding.ts    # Finding/ScanReport 스키마
-        └── synthesizer/         # 그룹화 + 머지 + 위험등급 + 의무 매핑
+### 5. 프로덕션 빌드 및 실행
+```bash
+npm run build
+npm start
 ```
 
----
+### 6. 사용 흐름
+1. `/`에서 회사 프로필을 입력해 AI 기본법 진단을 실행합니다.
+2. `/scan`에서 GitHub 저장소 URL을 입력해 코드 스캔을 실행합니다.
+3. `/dashboard`에서 누적된 진단/스캔 결과를 확인합니다.
 
-## 라이센스 / 면책
+## 📂 폴더 구조
+```text
+.
+├── benchmark
+│   ├── README.md
+│   └── lexos-aiba-benchmark.v1.ts
+├── public
+├── src
+│   ├── app
+│   │   ├── api
+│   │   ├── dashboard
+│   │   └── scan
+│   ├── components
+│   └── lib
+│       ├── gemini
+│       ├── laws
+│       ├── report
+│       ├── scan
+│       └── storage
+├── AGENTS.md
+├── CLAUDE.md
+├── SPEC.md
+├── next.config.ts
+├── package.json
+├── postcss.config.mjs
+├── README.md
+└── tsconfig.json
+```
 
-본 도구의 출력은 **자동화된 추론**이며 법적 자문이 아닙니다. 실제 의무 이행 전 법무팀/외부 자문을 거치세요. AI기본법 본문은 [국가법령정보센터](https://www.law.go.kr/)에서 확인.
+## 🤝 기여 방법
+기여를 원하시면 아래 방식으로 참여할 수 있습니다.
+
+1. 이 저장소를 포크하거나 브랜치를 생성합니다.
+2. 기능 추가 또는 버그 수정을 진행합니다.
+3. 변경 내용을 확인한 뒤 Pull Request를 생성합니다.
+4. 개선 아이디어나 버그 제보는 Issue로 등록합니다.
+
+가능하면 PR에는 변경 목적, 주요 수정 내용, 테스트 방법을 함께 적어 주세요.
+
+## 📜 라이선스
+현재 이 저장소에는 별도의 오픈소스 라이선스 파일이 포함되어 있지 않습니다. 배포 또는 공개 범위를 정하기 전에 `LICENSE` 파일을 추가해 정책을 명확히 하는 것을 권장합니다.
