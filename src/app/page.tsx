@@ -237,7 +237,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading || profile.aiUsages.length === 0}
-            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-200 disabled:text-slate-400 px-4 py-3 font-medium transition"
+            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:bg-slate-200 disabled:text-slate-400 px-4 py-3 font-medium transition"
           >
             {loading ? "진단 중…" : "AI기본법 30초 진단 실행"}
           </button>
